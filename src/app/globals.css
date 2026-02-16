@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-sand text-ink antialiased;
+}
+
+.dashboard-bg {
+  background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.18), transparent 25%),
+    radial-gradient(circle at 80% 10%, rgba(45, 212, 191, 0.14), transparent 25%),
+    radial-gradient(circle at 60% 80%, rgba(14, 165, 233, 0.16), transparent 25%),
+    #0b1120;
+}
+
+.section-shell {
+  @apply max-w-6xl mx-auto px-4 py-8;
+}
+
+.card {
+  @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+}
+
+.glass {
+  @apply border-white/30 bg-white/10 shadow-lg shadow-ink/30 backdrop-blur;
+}
+
+.card-header {
+  @apply flex items-center justify-between gap-2 border-b border-slate-100 px-6 py-4;
+}
+
+.card-body {
+  @apply px-6 py-4 space-y-4;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:bg-slate-50;
+}
+
+.badge {
+  @apply inline-flex items-center rounded-full bg-ink px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-white;
+}
+
+.stat-card {
+  @apply rounded-xl border border-white/10 bg-white/5 shadow-lg shadow-ink/30 backdrop-blur;
+}
+
+.input {
+  @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-ink focus:outline-none;
+}
+
+.sidebar {
+  @apply hidden h-screen w-64 flex-shrink-0 border-r border-white/10 bg-slate-900/80 backdrop-blur lg:block;
+}
+
+.topbar {
+  @apply sticky top-0 z-10 flex items-center gap-4 border-b border-white/10 bg-slate-900/70 px-6 py-4 backdrop-blur;
+}
+
+.table {
+  @apply w-full border-collapse text-sm;
+}
+
+.table thead {
+  @apply text-left text-slate-500 uppercase text-xs tracking-wide;
+}
+
+.table th,
+.table td {
+  @apply px-3 py-2 border-b border-slate-100 align-middle;
+}
+
+.pill {
+  @apply inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700;
+}
