@@ -14,10 +14,13 @@ const managedRoles = new Set(["faculty", "student"]);
 
 const links: NavLink[] = [
   { href: "/admin", label: "Dashboard", icon: "📊" },
+  { href: "/admin/assignments", label: "Assignments", icon: "🎯" },
   { href: "/admin/records", label: "Records", icon: "📚" },
   { href: "/admin/users", label: "Users", icon: "👥" },
   { href: "/admin/users?role=faculty", label: "Faculty", icon: "🎓", role: "faculty" },
   { href: "/admin/users?role=student", label: "Students", icon: "🧑‍🎓", role: "student" },
+  { href: "/evaluator", label: "Evaluator", icon: "✍️" },
+  { href: "/faculty", label: "My Dashboard", icon: "🏫" },
 ];
 
 export default function SidebarNav() {
