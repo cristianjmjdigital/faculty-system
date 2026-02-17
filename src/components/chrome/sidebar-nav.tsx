@@ -1,23 +1,39 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
-const links = [
+type NavLink = {
+  href: string;
+  label: string;
+  icon: string;
+  role?: string;
+};
+
+const managedRoles = new Set(["faculty", "student"]);
+
+const links: NavLink[] = [
   { href: "/admin", label: "Dashboard", icon: "📊" },
   { href: "/admin/records", label: "Records", icon: "📚" },
   { href: "/admin/users", label: "Users", icon: "👥" },
-  { href: "/student", label: "Student", icon: "🧑‍🎓" },
-  { href: "/faculty", label: "Faculty", icon: "🎓" },
+  { href: "/admin/users?role=faculty", label: "Faculty", icon: "🎓", role: "faculty" },
+  { href: "/admin/users?role=student", label: "Students", icon: "🧑‍🎓", role: "student" },
 ];
 
 export default function SidebarNav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentRole = searchParams?.get("role") ?? null;
 
   return (
     <nav className="space-y-2 text-sm text-slate-300">
       {links.map((link) => {
-        const active = pathname === link.href || pathname.startsWith(link.href);
+        const linkPath = link.href.split("?")[0];
+        const pathMatch = pathname === linkPath || pathname.startsWith(`${linkPath}/`);
+        const roleMatch = link.role
+          ? currentRole === link.role
+          : !managedRoles.has(currentRole ?? "");
+        const active = pathMatch && roleMatch;
         return (
           <Link
             key={link.href}

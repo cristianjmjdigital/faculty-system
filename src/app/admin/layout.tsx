@@ -16,13 +16,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               </div>
             </div>
             <SidebarNav />
-            <div className="mt-8 rounded-lg bg-white/5 p-4 text-xs text-slate-200">
-              <p className="font-semibold text-white">Get premium</p>
-              <p className="mt-1 text-slate-300">Unlock exports and analytics.</p>
-              <Link href="/" className="mt-3 inline-flex items-center rounded-md bg-white text-ink px-3 py-2 text-xs font-semibold">
-                Upgrade
-              </Link>
-            </div>
           </div>
         </aside>
 
