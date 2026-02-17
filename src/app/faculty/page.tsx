@@ -14,7 +14,11 @@ export default async function FacultyPage() {
   ]);
 
   const profile = profileRes.data;
-  const sections = sectionsRes.data ?? [];
+  const sections = (sectionsRes.data ?? []).map((section) => ({
+    ...section,
+    // Normalize related course to a single object for rendering.
+    course: Array.isArray(section.course) ? section.course[0] ?? null : section.course ?? null,
+  }));
 
   return (
     <main className="section-shell space-y-6">

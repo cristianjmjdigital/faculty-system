@@ -38,8 +38,17 @@ export default async function RecordsPage() {
   ]);
 
   const courses: Course[] = coursesRes.data ?? [];
-  const sections: Section[] = sectionsRes.data ?? [];
-  const sentiments: Sentiment[] = sentimentsRes.data ?? [];
+  const sections: Section[] = (sectionsRes.data ?? []).map((section) => ({
+    ...section,
+    // Supabase can return related records as arrays; normalize to single objects for rendering.
+    course: Array.isArray(section.course) ? section.course[0] ?? null : section.course ?? null,
+    faculty: Array.isArray(section.faculty) ? section.faculty[0] ?? null : section.faculty ?? null,
+  }));
+  const sentiments: Sentiment[] = (sentimentsRes.data ?? []).map((sentiment) => ({
+    ...sentiment,
+    faculty: Array.isArray(sentiment.faculty) ? sentiment.faculty[0] ?? null : sentiment.faculty ?? null,
+    section: Array.isArray(sentiment.section) ? sentiment.section[0] ?? null : sentiment.section ?? null,
+  }));
 
   return (
     <main className="section-shell space-y-8">
