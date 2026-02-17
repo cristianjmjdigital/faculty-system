@@ -28,10 +28,21 @@ export async function POST(req: NextRequest) {
     email,
     password,
     email_confirm: true,
+    user_metadata: { role: role || "faculty" },
   });
 
   if (createError || !userData?.user?.id) {
     return NextResponse.json({ error: createError?.message || "Unable to create auth user." }, { status: 500 });
+  }
+
+  // Ensure the JWT carries role in app_metadata for policies
+  const targetRole = role || "faculty";
+  const { error: metaError } = await supabaseAdmin.auth.admin.updateUserById(userData.user.id, {
+    app_metadata: { role: targetRole },
+  });
+
+  if (metaError) {
+    return NextResponse.json({ error: metaError.message }, { status: 500 });
   }
 
   // Create profile row with the new auth user id
@@ -40,7 +51,7 @@ export async function POST(req: NextRequest) {
       id: userData.user.id,
       full_name: full_name || null,
       email,
-      role: role || "faculty",
+      role: targetRole,
       department_id: department_id || null,
     },
   ]);

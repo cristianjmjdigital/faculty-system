@@ -13,8 +13,32 @@ type Props = {
 
 export default function AddSectionForm({ courses, faculty }: Props) {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const termOptions = useMemo(() => ["1st Sem", "2nd Sem", "Summer"], []);
+  const academicYearOptions = useMemo(() => {
+    const now = new Date();
+    // Start the list at the current academic year and go a few years forward.
+    const startYear = now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear() - 1;
+    return Array.from({ length: 6 }, (_, index) => {
+      const year = startYear + index;
+      return `${year}-${year + 1}`;
+    });
+  }, []);
+  const schedulePresets = useMemo(
+    () => [
+      "MWF 8:00-9:00",
+      "MWF 9:00-10:00",
+      "MWF 10:00-11:00",
+      "TTh 9:00-10:30",
+      "TTh 10:30-12:00",
+      "Sat 8:00-12:00",
+      "Evening 18:00-21:00",
+    ],
+    []
+  );
   const [message, setMessage] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [schedulePreset, setSchedulePreset] = useState("");
+  const [scheduleCustom, setScheduleCustom] = useState("");
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -26,10 +50,18 @@ export default function AddSectionForm({ courses, faculty }: Props) {
     const facultyId = (form.get("faculty_id") as string) || null;
     const term = (form.get("term") as string)?.trim() || null;
     const academicYear = (form.get("academic_year") as string)?.trim() || null;
-    const schedule = (form.get("schedule") as string)?.trim() || null;
+    const scheduleChoice = (form.get("schedule") as string) || "";
+    const customSchedule = (form.get("schedule_custom") as string)?.trim() || "";
+    const schedule = scheduleChoice === "custom" ? customSchedule || null : scheduleChoice || null;
 
     if (!courseId || !facultyId) {
       setMessage({ kind: "error", text: "Course and faculty are required." });
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (scheduleChoice === "custom" && !customSchedule) {
+      setMessage({ kind: "error", text: "Enter a custom schedule." });
       setIsSubmitting(false);
       return;
     }
@@ -53,10 +85,18 @@ export default function AddSectionForm({ courses, faculty }: Props) {
     setMessage({ kind: "success", text: "Section added." });
     setIsSubmitting(false);
     event.currentTarget.reset();
+    setSchedulePreset("");
+    setScheduleCustom("");
+  };
+
+  const handleReset = () => {
+    setMessage(null);
+    setSchedulePreset("");
+    setScheduleCustom("");
   };
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
+    <form className="space-y-4" onSubmit={handleSubmit} onReset={handleReset}>
       {message ? (
         <div
           className={`rounded-lg px-3 py-2 text-sm ${
@@ -96,17 +136,59 @@ export default function AddSectionForm({ courses, faculty }: Props) {
       <div className="grid gap-4 md:grid-cols-3">
         <label className="space-y-1 text-sm font-medium">
           Term
-          <input name="term" className="input w-full" placeholder="1st Sem" disabled={isSubmitting} />
+          <select name="term" className="input w-full" defaultValue="" disabled={isSubmitting}>
+            <option value="">Select term</option>
+            {termOptions.map((term) => (
+              <option key={term} value={term}>
+                {term}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="space-y-1 text-sm font-medium">
           Academic year
-          <input name="academic_year" className="input w-full" placeholder="2025-2026" disabled={isSubmitting} />
+          <select name="academic_year" className="input w-full" defaultValue="" disabled={isSubmitting}>
+            <option value="">Select academic year</option>
+            {academicYearOptions.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="space-y-1 text-sm font-medium">
           Schedule
-          <input name="schedule" className="input w-full" placeholder="MWF 9:00-10:00" disabled={isSubmitting} />
+          <div className="space-y-2">
+            <select
+              name="schedule"
+              className="input w-full"
+              value={schedulePreset}
+              onChange={(event) => setSchedulePreset(event.target.value)}
+              disabled={isSubmitting}
+            >
+              <option value="">Select schedule</option>
+              {schedulePresets.map((preset) => (
+                <option key={preset} value={preset}>
+                  {preset}
+                </option>
+              ))}
+              <option value="custom">Custom schedule</option>
+            </select>
+
+            {schedulePreset === "custom" ? (
+              <input
+                name="schedule_custom"
+                className="input w-full"
+                placeholder="e.g., Sat 13:00-17:00"
+                value={scheduleCustom}
+                onChange={(event) => setScheduleCustom(event.target.value)}
+                disabled={isSubmitting}
+                required
+              />
+            ) : null}
+          </div>
         </label>
       </div>
 
