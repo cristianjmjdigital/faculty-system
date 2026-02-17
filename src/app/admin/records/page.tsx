@@ -1,5 +1,6 @@
 import { getSupabaseServerClient } from "@/lib/supabase-server";
 import AddSectionForm from "@/components/admin/add-section-form";
+import SectionScoresCard from "@/components/admin/section-scores-card";
 
 export const dynamic = "force-dynamic";
 
@@ -21,10 +22,20 @@ type Sentiment = {
   section?: { term: string | null; academic_year: string | null } | null;
 };
 
+type SectionScore = {
+  sectionId: string;
+  courseLabel: string;
+  facultyName: string;
+  term: string;
+  schedule: string;
+  average: number;
+  responses: number;
+};
+
 export default async function RecordsPage() {
   const supabase = getSupabaseServerClient();
 
-  const [coursesRes, sectionsRes, sentimentsRes, facultyRes] = await Promise.all([
+  const [coursesRes, sectionsRes, sentimentsRes, facultyRes, responsesRes] = await Promise.all([
     supabase.from("courses").select("id, code, title").order("code").limit(100),
     supabase
       .from("sections")
@@ -42,6 +53,20 @@ export default async function RecordsPage() {
       .eq("role", "faculty")
       .order("full_name", { ascending: true })
       .limit(200),
+    supabase
+      .from("evaluation_responses")
+      .select(
+        `score, evaluation:evaluation_id (
+          assignment:assignment_id (
+            section:section_id (
+              id, term, academic_year, schedule,
+              course:course_id ( code, title ),
+              faculty:faculty_id ( full_name )
+            )
+          )
+        )`
+      )
+      .limit(1000),
   ]);
 
   const courses: Course[] = coursesRes.data ?? [];
@@ -56,6 +81,39 @@ export default async function RecordsPage() {
     faculty: Array.isArray(sentiment.faculty) ? sentiment.faculty[0] ?? null : sentiment.faculty ?? null,
     section: Array.isArray(sentiment.section) ? sentiment.section[0] ?? null : sentiment.section ?? null,
   }));
+
+  const sectionScores: SectionScore[] = (() => {
+    const bucket = new Map<string, { total: number; count: number; meta: SectionScore }>();
+
+    (responsesRes.data ?? []).forEach((row: any) => {
+      const section = row?.evaluation?.assignment?.section;
+      if (!section?.id) return;
+      const key = section.id as string;
+      const existing = bucket.get(key) ?? {
+        total: 0,
+        count: 0,
+        meta: {
+          sectionId: section.id,
+          courseLabel: section.course ? `${section.course.code} ${section.course.title}` : "Section",
+          facultyName: section.faculty?.full_name ?? "(no faculty)",
+          term: [section.term, section.academic_year].filter(Boolean).join(" "),
+          schedule: section.schedule ?? "",
+          average: 0,
+          responses: 0,
+        },
+      };
+      const score = Number(row.score ?? 0);
+      const nextTotal = existing.total + score;
+      const nextCount = existing.count + 1;
+      bucket.set(key, { ...existing, total: nextTotal, count: nextCount });
+    });
+
+    return Array.from(bucket.values()).map(({ total, count, meta }) => ({
+      ...meta,
+      average: count > 0 ? Number((total / count).toFixed(2)) : 0,
+      responses: count,
+    }));
+  })();
 
   const courseOptions = courses.map((c) => ({ id: c.id, label: `${c.code} ${c.title}` }));
   const facultyOptions = (facultyRes.data ?? []).map((f) => ({ id: f.id, name: f.full_name ?? "(no name)" }));
@@ -192,6 +250,8 @@ export default async function RecordsPage() {
           </div>
         </div>
       </div>
+
+      <SectionScoresCard scores={sectionScores} />
     </main>
   );
 }

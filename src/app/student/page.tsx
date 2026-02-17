@@ -1,5 +1,6 @@
 import StudentForm from "./student-form";
 import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -14,10 +15,34 @@ type SectionOption = {
   facultyId: string | null;
 };
 
+type RubricItem = {
+  id: string;
+  prompt: string;
+  orderIndex: number;
+  maxScore: number;
+};
+
+type RubricCategory = {
+  id: string;
+  label: string;
+  description: string | null;
+  orderIndex: number;
+  items: RubricItem[];
+};
+
 async function loadStudentData() {
   const supabase = getSupabaseServerClient();
 
-  const [periodsResult, sectionsResult] = await Promise.all([
+  const {
+    data: userData,
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !userData?.user) {
+    redirect("/auth/login?next=%2Fstudent");
+  }
+
+  const [periodsResult, sectionsResult, categoriesResult] = await Promise.all([
     supabase
       .from("evaluation_periods")
       .select("id, name, status, start_date")
@@ -29,6 +54,11 @@ async function loadStudentData() {
         "id, term, academic_year, schedule, course:course_id ( code, title ), faculty:faculty_id ( id, full_name )"
       )
       .limit(50),
+    supabase
+      .from("rubric_categories")
+      .select("id, label, description, order_index, rubric_items ( id, prompt, order_index, max_score )")
+      .order("order_index", { ascending: true })
+      .order("order_index", { ascending: true, foreignTable: "rubric_items" }),
   ]);
 
   const periods: PeriodOption[] = (periodsResult.data ?? []).map((p) => ({ id: p.id, name: p.name }));
@@ -37,38 +67,60 @@ async function loadStudentData() {
     const course = s.course ? `${s.course.code} ${s.course.title}` : "Section";
     const term = s.term ? ` • ${s.term}` : "";
     const schedule = s.schedule ? ` • ${s.schedule}` : "";
+    const faculty = s.faculty?.full_name ? ` • ${s.faculty.full_name}` : "";
     return {
       id: s.id,
-      label: `${course}${term}${schedule}`,
+      label: `${course}${term}${schedule}${faculty}`,
       facultyId: s.faculty ? s.faculty.id : null,
     };
   });
 
+  const categories: RubricCategory[] = (categoriesResult.data ?? []).map((cat: any) => ({
+    id: cat.id,
+    label: cat.label,
+    description: cat.description,
+    orderIndex: cat.order_index ?? 0,
+    items: Array.isArray(cat.rubric_items)
+      ? cat.rubric_items.map((item: any) => ({
+          id: item.id,
+          prompt: item.prompt,
+          orderIndex: item.order_index ?? 0,
+          maxScore: item.max_score ?? 5,
+        }))
+      : [],
+  }));
+
+  const errorMessages = [periodsResult.error?.message, sectionsResult.error?.message, categoriesResult.error?.message]
+    .filter(Boolean)
+    .join(" | ")
+    .trim();
+
   return {
     periods,
     sections,
-    error: periodsResult.error?.message || sectionsResult.error?.message,
+    categories,
+    error: errorMessages || null,
   };
 }
 
 export default async function StudentPage() {
-  const { periods, sections, error } = await loadStudentData();
+  const { periods, sections, categories, error } = await loadStudentData();
 
   return (
     <main className="section-shell space-y-6">
       <header className="space-y-1">
         <p className="text-sm uppercase tracking-wide text-slate-500">Student</p>
-        <h1 className="text-2xl font-bold">Share your notes and sentiment</h1>
+        <h1 className="text-2xl font-bold">Faculty teaching effectiveness</h1>
         <p className="text-slate-600 text-sm">
-          Captures qualitative input and saves to Supabase with period and section context. Authentication is required
-          to satisfy row-level security.
+          Please evaluate the faculty member using the scale below. Ratings are required for each criterion and will be
+          stored with the selected period and section.
         </p>
       </header>
 
       <div className="card">
         <div className="card-body space-y-4">
           {error ? <p className="text-sm text-rose-700">{error}</p> : null}
-          <StudentForm periods={periods} sections={sections} />
+          <StudentForm periods={periods} sections={sections} categories={categories} />
         </div>
       </div>
     </main>

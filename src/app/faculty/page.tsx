@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { redirect } from "next/navigation";
 
 type RawSectionRow = {
   id: string;
@@ -27,6 +28,10 @@ export default async function FacultyPage() {
   } = await supabase.auth.getUser();
 
   const user = userData?.user ?? null;
+
+  if (!user) {
+    redirect("/auth/login?next=%2Ffaculty");
+  }
 
   let profile = null;
   let sections: SectionRow[] = [];
