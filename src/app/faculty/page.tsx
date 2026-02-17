@@ -1,11 +1,19 @@
 import { getSupabaseServerClient } from "@/lib/supabase-server";
 
-type SectionRow = {
+type RawSectionRow = {
   id: string;
   term: string | null;
   academic_year: string | null;
   schedule: string | null;
   course: { code: string; title: string } | { code: string; title: string }[] | null;
+};
+
+type SectionRow = {
+  id: string;
+  term: string | null;
+  academic_year: string | null;
+  schedule: string | null;
+  course: { code: string; title: string } | null;
 };
 
 export const dynamic = "force-dynamic";
@@ -36,7 +44,7 @@ export default async function FacultyPage() {
     ]);
 
     profile = profileRes.data;
-    sections = (sectionsRes.data ?? []).map((section: SectionRow) => ({
+    sections = ((sectionsRes.data ?? []) as RawSectionRow[]).map((section) => ({
       ...section,
       // Normalize related course to a single object for rendering.
       course: Array.isArray(section.course) ? section.course[0] ?? null : section.course ?? null,

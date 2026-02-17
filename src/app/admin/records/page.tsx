@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from "@/lib/supabase-server";
+import AddSectionForm from "@/components/admin/add-section-form";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ type Sentiment = {
 export default async function RecordsPage() {
   const supabase = getSupabaseServerClient();
 
-  const [coursesRes, sectionsRes, sentimentsRes] = await Promise.all([
+  const [coursesRes, sectionsRes, sentimentsRes, facultyRes] = await Promise.all([
     supabase.from("courses").select("id, code, title").order("code").limit(100),
     supabase
       .from("sections")
@@ -35,6 +36,12 @@ export default async function RecordsPage() {
       .select("id, sentiment, created_at, faculty:faculty_id ( full_name ), section:section_id ( term, academic_year )")
       .order("created_at", { ascending: false })
       .limit(50),
+    supabase
+      .from("profiles")
+      .select("id, full_name")
+      .eq("role", "faculty")
+      .order("full_name", { ascending: true })
+      .limit(200),
   ]);
 
   const courses: Course[] = coursesRes.data ?? [];
@@ -50,6 +57,9 @@ export default async function RecordsPage() {
     section: Array.isArray(sentiment.section) ? sentiment.section[0] ?? null : sentiment.section ?? null,
   }));
 
+  const courseOptions = courses.map((c) => ({ id: c.id, label: `${c.code} ${c.title}` }));
+  const facultyOptions = (facultyRes.data ?? []).map((f) => ({ id: f.id, name: f.full_name ?? "(no name)" }));
+
   return (
     <main className="section-shell space-y-8">
       <header className="space-y-1">
@@ -57,6 +67,15 @@ export default async function RecordsPage() {
         <h1 className="text-2xl font-bold text-white">Records overview</h1>
         <p className="text-slate-200 text-sm">Courses, sections, and student sentiments.</p>
       </header>
+
+      <div className="card glass">
+        <div className="card-header">
+          <h2 className="text-lg font-semibold text-white">Create section</h2>
+        </div>
+        <div className="card-body bg-white/60 backdrop-blur">
+          <AddSectionForm courses={courseOptions} faculty={facultyOptions} />
+        </div>
+      </div>
 
       <div className="card glass">
         <div className="card-header">
