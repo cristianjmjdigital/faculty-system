@@ -23,6 +23,14 @@
       "static/chunks/231-8fc8a7d4c81b58b4.js",
       "static/chunks/app/page-9dc1d957ddf21dfc.js"
     ],
+    "/student/page": [
+      "static/chunks/webpack-5e40397c9eb56dba.js",
+      "static/chunks/fd9d1056-b6e16a5f15b47ad4.js",
+      "static/chunks/23-c61e312c20c04c5e.js",
+      "static/chunks/main-app-c12cbae2e2973dc0.js",
+      "static/chunks/392-79ff4f0759bce948.js",
+      "static/chunks/app/student/page-d2c7c89983e90fb9.js"
+    ],
     "/auth/login/page": [
       "static/chunks/webpack-5e40397c9eb56dba.js",
       "static/chunks/fd9d1056-b6e16a5f15b47ad4.js",
@@ -38,21 +46,13 @@
       "static/chunks/main-app-c12cbae2e2973dc0.js",
       "static/chunks/app/faculty/page-7cd0419c60607924.js"
     ],
-    "/student/page": [
+    "/admin/users/page": [
       "static/chunks/webpack-5e40397c9eb56dba.js",
       "static/chunks/fd9d1056-b6e16a5f15b47ad4.js",
       "static/chunks/23-c61e312c20c04c5e.js",
       "static/chunks/main-app-c12cbae2e2973dc0.js",
       "static/chunks/392-79ff4f0759bce948.js",
-      "static/chunks/app/student/page-d2c7c89983e90fb9.js"
-    ],
-    "/admin/records/page": [
-      "static/chunks/webpack-5e40397c9eb56dba.js",
-      "static/chunks/fd9d1056-b6e16a5f15b47ad4.js",
-      "static/chunks/23-c61e312c20c04c5e.js",
-      "static/chunks/main-app-c12cbae2e2973dc0.js",
-      "static/chunks/392-79ff4f0759bce948.js",
-      "static/chunks/app/admin/records/page-b22b6be06f4c25b4.js"
+      "static/chunks/app/admin/users/page-c4f8827f48646c4f.js"
     ],
     "/admin/layout": [
       "static/chunks/webpack-5e40397c9eb56dba.js",
@@ -70,13 +70,13 @@
       "static/chunks/392-79ff4f0759bce948.js",
       "static/chunks/app/admin/page-db9474a66ac4def7.js"
     ],
-    "/admin/users/page": [
+    "/admin/records/page": [
       "static/chunks/webpack-5e40397c9eb56dba.js",
       "static/chunks/fd9d1056-b6e16a5f15b47ad4.js",
       "static/chunks/23-c61e312c20c04c5e.js",
       "static/chunks/main-app-c12cbae2e2973dc0.js",
       "static/chunks/392-79ff4f0759bce948.js",
-      "static/chunks/app/admin/users/page-c4f8827f48646c4f.js"
+      "static/chunks/app/admin/records/page-b22b6be06f4c25b4.js"
     ]
   }
 }
