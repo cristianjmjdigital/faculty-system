@@ -41,9 +41,9 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
   return (
     <main className="section-shell space-y-6">
       <header className="space-y-1">
-        <p className="text-sm uppercase tracking-wide text-slate-300">Admin</p>
-        <h1 className="text-2xl font-bold text-white">Users & roles</h1>
-        <p className="text-slate-200 text-sm">
+        <div className="badge">Admin</div>
+        <h1 className="mt-2 text-2xl font-bold text-white">Users & roles</h1>
+        <p className="text-slate-400 text-sm">
           Manage admin / faculty / student roles{roleFilter ? ` — filtered to ${roleFilter}.` : "."}
         </p>
       </header>

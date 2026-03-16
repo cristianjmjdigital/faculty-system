@@ -121,9 +121,9 @@ export default async function RecordsPage() {
   return (
     <main className="section-shell space-y-8">
       <header className="space-y-1">
-        <p className="text-sm uppercase tracking-wide text-slate-300">Admin</p>
-        <h1 className="text-2xl font-bold text-white">Records overview</h1>
-        <p className="text-slate-200 text-sm">Courses, sections, and student sentiments.</p>
+        <div className="badge">Admin</div>
+        <h1 className="mt-2 text-2xl font-bold text-white">Records overview</h1>
+        <p className="text-slate-400 text-sm">Courses, sections, and student sentiments.</p>
       </header>
 
       <div className="card glass">

@@ -82,10 +82,10 @@ export default async function AdminPage() {
       <div className="section-shell space-y-8">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-wide text-slate-300">Dashboard</p>
-            <h1 className="text-3xl font-bold text-white">Faculty evaluation control center</h1>
-            <p className="text-slate-200 text-sm">
-              Track evaluation periods, manage rubrics, and collect sentiment in one view.
+            <div className="badge">Dashboard</div>
+            <h1 className="mt-2 text-3xl font-bold text-white">Faculty evaluation control center</h1>
+            <p className="text-slate-400 text-sm mt-1">
+              Track evaluation periods, manage rubrics, and review data at a glance.
             </p>
           </div>
         </header>
@@ -137,17 +137,17 @@ type StatProps = {
 
 function StatCard({ title, value, tone }: StatProps) {
   const toneClasses: Record<string, string> = {
-    blue: "from-sky-500/20 to-sky-700/40 text-sky-200",
-    green: "from-emerald-500/20 to-emerald-700/40 text-emerald-200",
-    purple: "from-indigo-500/20 to-indigo-700/40 text-indigo-200",
-    amber: "from-amber-500/20 to-amber-700/40 text-amber-200",
+    blue: "from-indigo-500/20 to-indigo-600/30 text-indigo-300",
+    green: "from-emerald-500/20 to-emerald-600/30 text-emerald-300",
+    purple: "from-violet-500/20 to-violet-600/30 text-violet-300",
+    amber: "from-amber-500/20 to-amber-600/30 text-amber-300",
   };
 
   return (
     <div className="stat-card">
-      <div className={`rounded-xl bg-gradient-to-br ${toneClasses[tone]} p-4`}>
-        <p className="text-xs uppercase tracking-wide text-white/70">{title}</p>
-        <p className="text-3xl font-bold text-white">{value}</p>
+      <div className={`rounded-2xl bg-gradient-to-br ${toneClasses[tone]} p-5`}>
+        <p className="text-xs font-medium uppercase tracking-wider text-white/60">{title}</p>
+        <p className="mt-1 text-3xl font-bold text-white">{value}</p>
       </div>
     </div>
   );

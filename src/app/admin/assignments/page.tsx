@@ -109,12 +109,12 @@ export default async function AssignmentsPage() {
       <div className="section-shell space-y-8">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-wide text-slate-300">Management</p>
-            <h1 className="text-3xl font-bold text-white">Evaluator assignments</h1>
-            <p className="text-slate-200 text-sm">Assign evaluators to faculty members for specific evaluation periods.</p>
+            <div className="badge">Management</div>
+            <h1 className="mt-2 text-3xl font-bold text-white">Evaluator assignments</h1>
+            <p className="text-slate-400 text-sm mt-1">Assign evaluators to faculty members for specific evaluation periods.</p>
           </div>
           <Link href="/admin" className="btn-secondary w-fit">
-            ← Back to Admin
+            &larr; Back to Admin
           </Link>
         </header>
 

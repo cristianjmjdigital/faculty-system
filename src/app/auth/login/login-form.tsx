@@ -48,12 +48,12 @@ export default function LoginForm({ next }: Props) {
   };
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
+    <form className="space-y-5" onSubmit={handleSubmit}>
       {status.kind === "error" ? (
-        <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-800">{status.message}</div>
+        <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-sm text-rose-700">{status.message}</div>
       ) : null}
 
-      <label className="space-y-1 text-sm font-medium">
+      <label className="block space-y-1.5 text-sm font-medium text-slate-700">
         Email
         <input
           name="email"
@@ -65,7 +65,7 @@ export default function LoginForm({ next }: Props) {
         />
       </label>
 
-      <label className="space-y-1 text-sm font-medium">
+      <label className="block space-y-1.5 text-sm font-medium text-slate-700">
         Password
         <input
           name="password"
@@ -78,7 +78,14 @@ export default function LoginForm({ next }: Props) {
       </label>
 
       <button type="submit" className="btn-primary w-full" disabled={loading}>
-        {loading ? "Signing in..." : "Sign in"}
+        {loading ? (
+          <span className="flex items-center gap-2">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+            Signing in...
+          </span>
+        ) : (
+          "Sign in"
+        )}
       </button>
     </form>
   );
