@@ -63,8 +63,8 @@ export default async function PerformancePage() {
     <div className="section-shell space-y-8 fade-in">
       <header className="space-y-1">
         <div className="badge">Performance</div>
-        <h1 className="mt-2 text-2xl font-bold text-white">Performance Rating</h1>
-        <p className="text-slate-400 text-sm">
+        <h1 className="mt-2 text-2xl font-bold text-ink">Performance Rating</h1>
+        <p className="text-slate-600 text-sm">
           Aggregated scores across {submitted.length} submitted evaluation{submitted.length !== 1 ? "s" : ""}.
         </p>
       </header>
@@ -86,16 +86,16 @@ export default async function PerformancePage() {
           {/* Category breakdown */}
           <div className="card glass">
             <div className="card-header">
-              <h2 className="text-lg font-semibold text-white">Category Averages</h2>
+              <h2 className="text-lg font-semibold text-ink">Category Averages</h2>
             </div>
             <div className="card-body space-y-5">
               {categories.map((cat) => (
                 <div key={cat.label}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-medium text-slate-200">{cat.label}</span>
+                    <span className="text-sm font-medium text-slate-700">{cat.label}</span>
                     <span className={`text-sm font-bold ${ratingColor(cat.avg)}`}>{cat.avg} / 5</span>
                   </div>
-                  <div className="h-3 w-full overflow-hidden rounded-full bg-white/10">
+                  <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200">
                     <div
                       className={`h-full rounded-full bg-gradient-to-r ${barColor(cat.avg)} transition-all duration-500`}
                       style={{ width: `${(cat.avg / 5) * 100}%` }}
@@ -110,7 +110,7 @@ export default async function PerformancePage() {
           {/* Per-evaluator table */}
           <div className="card glass">
             <div className="card-header">
-              <h2 className="text-lg font-semibold text-white">Evaluator Breakdown</h2>
+              <h2 className="text-lg font-semibold text-ink">Evaluator Breakdown</h2>
             </div>
             <div className="card-body bg-white/60 backdrop-blur">
               <div className="overflow-auto rounded-lg border border-slate-200 bg-white shadow-sm">

@@ -18,8 +18,8 @@ export default async function SentimentPage() {
     <div className="section-shell space-y-8 fade-in">
       <header className="space-y-1">
         <div className="badge">Sentiment</div>
-        <h1 className="mt-2 text-2xl font-bold text-white">Sentiment Report</h1>
-        <p className="text-slate-400 text-sm">
+        <h1 className="mt-2 text-2xl font-bold text-ink">Sentiment Report</h1>
+        <p className="text-slate-600 text-sm">
           Student sentiment feedback across all evaluation periods.
         </p>
       </header>
@@ -34,18 +34,18 @@ export default async function SentimentPage() {
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="stat-card p-5 text-center">
               <p className="text-xs font-medium uppercase tracking-wider text-emerald-400">Positive</p>
-              <p className="mt-1 text-4xl font-extrabold text-white">{positive.length}</p>
-              <p className="text-sm text-slate-400">{pct(positive.length)}%</p>
+              <p className="mt-1 text-4xl font-extrabold text-slate-900">{positive.length}</p>
+              <p className="text-sm text-slate-500">{pct(positive.length)}%</p>
             </div>
             <div className="stat-card p-5 text-center">
               <p className="text-xs font-medium uppercase tracking-wider text-slate-400">Neutral</p>
-              <p className="mt-1 text-4xl font-extrabold text-white">{neutral.length}</p>
-              <p className="text-sm text-slate-400">{pct(neutral.length)}%</p>
+              <p className="mt-1 text-4xl font-extrabold text-slate-900">{neutral.length}</p>
+              <p className="text-sm text-slate-500">{pct(neutral.length)}%</p>
             </div>
             <div className="stat-card p-5 text-center">
               <p className="text-xs font-medium uppercase tracking-wider text-rose-400">Negative</p>
-              <p className="mt-1 text-4xl font-extrabold text-white">{negative.length}</p>
-              <p className="text-sm text-slate-400">{pct(negative.length)}%</p>
+              <p className="mt-1 text-4xl font-extrabold text-slate-900">{negative.length}</p>
+              <p className="text-sm text-slate-500">{pct(negative.length)}%</p>
             </div>
           </div>
 
@@ -86,7 +86,7 @@ export default async function SentimentPage() {
           {withComments.length > 0 && (
             <div className="card glass">
               <div className="card-header">
-                <h2 className="text-lg font-semibold text-white">Student Comments</h2>
+                <h2 className="text-lg font-semibold text-ink">Student Comments</h2>
                 <span className="text-xs text-slate-400">{withComments.length} comment{withComments.length !== 1 ? "s" : ""}</span>
               </div>
               <div className="card-body space-y-2 max-h-[500px] overflow-y-auto">
@@ -114,7 +114,7 @@ export default async function SentimentPage() {
                           {new Date(s.created_at).toLocaleDateString()}
                         </span>
                       </div>
-                      <p className="text-sm text-slate-200">{s.comments}</p>
+                      <p className="text-sm text-slate-700">{s.comments}</p>
                     </div>
                   );
                 })}

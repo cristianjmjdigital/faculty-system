@@ -1,24 +1,21 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import FacultyTabNav from "@/components/chrome/faculty-tab-nav";
+import SignOutButton from "@/components/chrome/sign-out-button";
 
 export default function FacultyLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-white/[0.06] bg-slate-950/90 backdrop-blur-xl">
+    <div className="min-h-screen bg-sand text-ink">
+      <header className="border-b border-slate-200/80 bg-white/80 backdrop-blur-xl">
         <div className="section-shell flex items-center justify-between py-4">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-lg font-bold text-white">
-              F
-            </Link>
             <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-slate-400">Faculty Portal</p>
-              <p className="text-sm font-semibold text-white">Evaluation System</p>
+              <p className="text-xs font-medium uppercase tracking-wider text-slate-400">RateMe</p>
+              <p className="text-sm font-semibold text-ink">Faculty Evaluation with Decision Support System</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/admin" className="btn-ghost text-xs">Admin</Link>
-            <Link href="/auth/login" className="btn-ghost text-xs">Sign out</Link>
+            <SignOutButton className="btn-ghost text-xs">Sign out</SignOutButton>
           </div>
         </div>
         <div className="section-shell !py-0">

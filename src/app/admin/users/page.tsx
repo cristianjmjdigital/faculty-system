@@ -42,15 +42,15 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
     <main className="section-shell space-y-6">
       <header className="space-y-1">
         <div className="badge">Admin</div>
-        <h1 className="mt-2 text-2xl font-bold text-white">Users & roles</h1>
-        <p className="text-slate-400 text-sm">
+        <h1 className="mt-2 text-2xl font-bold text-ink">Users & roles</h1>
+        <p className="text-slate-600 text-sm">
           Manage admin / faculty / student roles{roleFilter ? ` — filtered to ${roleFilter}.` : "."}
         </p>
       </header>
 
       <div className="card glass">
         <div className="card-header">
-          <h2 className="text-lg font-semibold text-white">Add faculty / student</h2>
+          <h2 className="text-lg font-semibold text-ink">Add faculty / student</h2>
         </div>
         <div className="card-body bg-white/60 backdrop-blur">
           <AddUserForm departments={departments} defaultRole={defaultRoleForForm} />
@@ -59,7 +59,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
 
       <div className="card glass">
         <div className="card-header">
-          <h2 className="text-lg font-semibold text-white">Directory</h2>
+          <h2 className="text-lg font-semibold text-ink">Directory</h2>
           {roleFilter ? <span className="pill">{roleFilter}</span> : null}
         </div>
         <div className="card-body bg-white/60 backdrop-blur">

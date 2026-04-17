@@ -68,8 +68,8 @@ export default async function EvaluatePage() {
     <div className="section-shell space-y-6 fade-in">
       <header className="space-y-1">
         <div className="badge">Evaluate</div>
-        <h1 className="mt-2 text-2xl font-bold text-white">Faculty Teaching Effectiveness</h1>
-        <p className="text-slate-400 text-sm">
+        <h1 className="mt-2 text-2xl font-bold text-ink">Faculty Teaching Effectiveness</h1>
+        <p className="text-slate-600 text-sm">
           Rate each criterion for the selected section and period. All ratings are required.
         </p>
       </header>

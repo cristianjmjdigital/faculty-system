@@ -83,8 +83,8 @@ export default async function AdminPage() {
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="badge">Dashboard</div>
-            <h1 className="mt-2 text-3xl font-bold text-white">Faculty evaluation control center</h1>
-            <p className="text-slate-400 text-sm mt-1">
+            <h1 className="mt-2 text-3xl font-bold text-ink">Faculty evaluation control center</h1>
+            <p className="text-slate-600 text-sm mt-1">
               Track evaluation periods, manage rubrics, and review data at a glance.
             </p>
           </div>
@@ -101,8 +101,8 @@ export default async function AdminPage() {
           <div className="card glass lg:col-span-12">
             <div className="card-header">
               <div>
-                <p className="text-xs uppercase tracking-wide text-slate-400">Timeline</p>
-                <h2 className="text-lg font-semibold text-white">Evaluation periods</h2>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Timeline</p>
+                <h2 className="text-lg font-semibold text-ink">Evaluation periods</h2>
               </div>
               <span className="badge">Manage</span>
             </div>
@@ -115,8 +115,8 @@ export default async function AdminPage() {
           <div className="card glass lg:col-span-12">
             <div className="card-header">
               <div>
-                <p className="text-xs uppercase tracking-wide text-slate-400">Rubric</p>
-                <h2 className="text-lg font-semibold text-white">Categories & items</h2>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Rubric</p>
+                <h2 className="text-lg font-semibold text-ink">Categories & items</h2>
               </div>
             </div>
             <div className="card-body bg-white/60 backdrop-blur">
@@ -137,17 +137,17 @@ type StatProps = {
 
 function StatCard({ title, value, tone }: StatProps) {
   const toneClasses: Record<string, string> = {
-    blue: "from-indigo-500/20 to-indigo-600/30 text-indigo-300",
-    green: "from-emerald-500/20 to-emerald-600/30 text-emerald-300",
-    purple: "from-violet-500/20 to-violet-600/30 text-violet-300",
-    amber: "from-amber-500/20 to-amber-600/30 text-amber-300",
+    blue: "from-indigo-200/60 to-indigo-300/70 text-indigo-700",
+    green: "from-emerald-200/60 to-emerald-300/70 text-emerald-700",
+    purple: "from-violet-200/60 to-violet-300/70 text-violet-700",
+    amber: "from-amber-200/60 to-amber-300/70 text-amber-700",
   };
 
   return (
     <div className="stat-card">
       <div className={`rounded-2xl bg-gradient-to-br ${toneClasses[tone]} p-5`}>
-        <p className="text-xs font-medium uppercase tracking-wider text-white/60">{title}</p>
-        <p className="mt-1 text-3xl font-bold text-white">{value}</p>
+        <p className="text-xs font-medium uppercase tracking-wider text-slate-600">{title}</p>
+        <p className="mt-1 text-3xl font-bold text-slate-900">{value}</p>
       </div>
     </div>
   );

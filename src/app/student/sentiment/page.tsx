@@ -45,8 +45,8 @@ export default async function SentimentPage() {
     <div className="section-shell space-y-6 fade-in">
       <header className="space-y-1">
         <div className="badge">Sentiment</div>
-        <h1 className="mt-2 text-2xl font-bold text-white">Submit Sentiment</h1>
-        <p className="text-slate-400 text-sm">
+        <h1 className="mt-2 text-2xl font-bold text-ink">Submit Sentiment</h1>
+        <p className="text-slate-600 text-sm">
           Share your sentiment about a faculty member. Your feedback helps improve teaching quality.
         </p>
       </header>

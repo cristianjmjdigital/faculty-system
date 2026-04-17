@@ -13,7 +13,7 @@ type Props = {
 
 const sentimentOptions = [
   { value: "positive", label: "Positive", emoji: "😊", color: "border-emerald-500 bg-emerald-500/10 text-emerald-300", activeRing: "ring-emerald-500" },
-  { value: "neutral", label: "Neutral", emoji: "😐", color: "border-slate-400 bg-slate-500/10 text-slate-300", activeRing: "ring-slate-400" },
+  { value: "neutral", label: "Neutral", emoji: "😐", color: "border-slate-300 bg-slate-50 text-slate-600", activeRing: "ring-slate-400" },
   { value: "negative", label: "Negative", emoji: "😞", color: "border-rose-500 bg-rose-500/10 text-rose-300", activeRing: "ring-rose-500" },
 ];
 
@@ -180,7 +180,7 @@ export default function SentimentForm({ periods, sections }: Props) {
         <button type="submit" className="btn-primary" disabled={isSubmitting}>
           {isSubmitting ? (
             <span className="flex items-center gap-2">
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
               Submitting...
             </span>
           ) : (

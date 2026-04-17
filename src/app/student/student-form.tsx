@@ -76,6 +76,13 @@ export default function StudentForm({ periods, sections, categories }: Props) {
       return;
     }
 
+    const selectedSection = sections.find((s) => s.id === sectionId) ?? null;
+    if (!selectedSection?.facultyId) {
+      setStatus({ kind: "error", message: "Selected section has no assigned faculty." });
+      setIsSubmitting(false);
+      return;
+    }
+
     const missingItems = categories
       .flatMap((cat) => cat.items)
       .filter((item) => scores[item.id] === undefined || scores[item.id] === null);
@@ -86,12 +93,13 @@ export default function StudentForm({ periods, sections, categories }: Props) {
       return;
     }
 
-    const { data: assignment, error: assignmentError } = await supabase
+    let { data: assignment, error: assignmentError } = await supabase
       .from("evaluator_assignments")
       .select("id")
       .eq("period_id", periodId)
       .eq("section_id", sectionId)
       .eq("evaluator_id", userData.user.id)
+      .eq("role", "student")
       .maybeSingle();
 
     if (assignmentError) {
@@ -101,9 +109,25 @@ export default function StudentForm({ periods, sections, categories }: Props) {
     }
 
     if (!assignment) {
-      setStatus({ kind: "error", message: "No evaluator assignment found for this period and section." });
-      setIsSubmitting(false);
-      return;
+      const { data: newAssignment, error: createError } = await supabase
+        .from("evaluator_assignments")
+        .insert({
+          period_id: periodId,
+          section_id: sectionId,
+          faculty_id: selectedSection.facultyId,
+          evaluator_id: userData.user.id,
+          role: "student",
+        })
+        .select("id")
+        .single();
+
+      if (createError || !newAssignment) {
+        setStatus({ kind: "error", message: createError?.message || "Unable to create student assignment." });
+        setIsSubmitting(false);
+        return;
+      }
+
+      assignment = newAssignment;
     }
 
     const { data: evaluation, error: evaluationError } = await supabase

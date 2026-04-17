@@ -19,8 +19,8 @@ export default async function SummaryPage() {
     <div className="section-shell space-y-8 fade-in">
       <header className="space-y-1">
         <div className="badge">Summary</div>
-        <h1 className="mt-2 text-2xl font-bold text-white">Evaluation Summary</h1>
-        <p className="text-slate-400 text-sm">
+        <h1 className="mt-2 text-2xl font-bold text-ink">Evaluation Summary</h1>
+        <p className="text-slate-600 text-sm">
           All evaluations received, grouped by evaluation period.
         </p>
       </header>
@@ -37,11 +37,11 @@ export default async function SummaryPage() {
           return (
             <div key={periodName} className="card glass">
               <div className="card-header">
-                <h2 className="text-lg font-semibold text-white">{periodName}</h2>
+                <h2 className="text-lg font-semibold text-ink">{periodName}</h2>
                 <div className="flex gap-2 text-xs">
-                  <span className="pill bg-emerald-900/40 text-emerald-300">{submitted.length} submitted</span>
+                  <span className="pill bg-emerald-100 text-emerald-700">{submitted.length} submitted</span>
                   {draft.length > 0 && (
-                    <span className="pill bg-amber-900/40 text-amber-300">{draft.length} draft</span>
+                    <span className="pill bg-amber-100 text-amber-700">{draft.length} draft</span>
                   )}
                 </div>
               </div>
@@ -54,10 +54,10 @@ export default async function SummaryPage() {
                       : 0;
 
                   return (
-                    <details key={idx} className="group rounded-xl border border-white/10 bg-white/[0.04]">
-                      <summary className="flex cursor-pointer items-center justify-between px-5 py-3 transition-colors hover:bg-white/[0.06]">
+                    <details key={idx} className="group rounded-xl border border-slate-200/80 bg-white">
+                      <summary className="flex cursor-pointer items-center justify-between px-5 py-3 transition-colors hover:bg-slate-50">
                         <div className="flex items-center gap-3">
-                          <span className="text-sm font-semibold text-white">{ev.evaluatorName}</span>
+                          <span className="text-sm font-semibold text-ink">{ev.evaluatorName}</span>
                           <span className="pill capitalize text-xs">{ev.role}</span>
                         </div>
                         <div className="flex items-center gap-3">
@@ -79,7 +79,7 @@ export default async function SummaryPage() {
                         </div>
                       </summary>
 
-                      <div className="border-t border-white/10 px-5 py-4 space-y-4">
+                      <div className="border-t border-slate-200 px-5 py-4 space-y-4">
                         {ev.submittedAt && (
                           <p className="text-xs text-slate-500">
                             Submitted: {new Date(ev.submittedAt).toLocaleString()}
@@ -89,16 +89,16 @@ export default async function SummaryPage() {
                         {cats.length > 0 && (
                           <div className="grid gap-3 sm:grid-cols-2">
                             {cats.map(([label, avg]) => (
-                              <div key={label} className="rounded-lg bg-white/[0.06] p-3">
-                                <p className="text-xs font-medium text-slate-400">{label}</p>
+                              <div key={label} className="rounded-lg bg-slate-50 p-3">
+                                <p className="text-xs font-medium text-slate-500">{label}</p>
                                 <div className="mt-1 flex items-center gap-2">
-                                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
+                                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200">
                                     <div
                                       className="h-full rounded-full bg-accent transition-all duration-500"
                                       style={{ width: `${(avg / 5) * 100}%` }}
                                     />
                                   </div>
-                                  <span className="text-xs font-bold text-white">{avg}</span>
+                                  <span className="text-xs font-bold text-slate-900">{avg}</span>
                                 </div>
                               </div>
                             ))}
@@ -106,9 +106,9 @@ export default async function SummaryPage() {
                         )}
 
                         {ev.overallComment && (
-                          <div className="rounded-lg bg-white/[0.06] p-3">
-                            <p className="text-xs font-medium text-slate-400 mb-1">Comment</p>
-                            <p className="text-sm text-slate-300">{ev.overallComment}</p>
+                          <div className="rounded-lg bg-slate-50 p-3">
+                            <p className="text-xs font-medium text-slate-500 mb-1">Comment</p>
+                            <p className="text-sm text-slate-700">{ev.overallComment}</p>
                           </div>
                         )}
                       </div>

@@ -76,8 +76,8 @@ export default async function SelfEvaluationPage() {
             Self
           </span>
         </div>
-        <h1 className="mt-2 text-2xl font-bold text-white">Self Evaluation Form</h1>
-        <p className="text-slate-400 text-sm">
+        <h1 className="mt-2 text-2xl font-bold text-ink">Self Evaluation Form</h1>
+        <p className="text-slate-600 text-sm">
           Evaluate your own teaching performance. Select one of your sections and an open evaluation period, then rate each criterion honestly.
         </p>
       </header>

@@ -28,7 +28,7 @@ export default function SectionScoresCard({ scores }: Props) {
       <div className="card-header">
         <div>
           <p className="text-xs uppercase tracking-wide text-slate-400">Evaluations</p>
-          <h2 className="text-lg font-semibold text-white">Section scores</h2>
+          <h2 className="text-lg font-semibold text-ink">Section scores</h2>
         </div>
         <div className="flex gap-2">
           <button className="btn-secondary" onClick={handlePrint}>

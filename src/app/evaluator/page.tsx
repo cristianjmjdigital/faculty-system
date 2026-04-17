@@ -148,15 +148,15 @@ export default async function EvaluatorPage() {
   return (
     <main className="section-shell space-y-6">
       <header className="space-y-1">
-        <p className="text-sm uppercase tracking-wide text-slate-300">Evaluator</p>
-        <h1 className="text-2xl font-bold text-white">My evaluations</h1>
-        <p className="text-slate-200 text-sm">
+        <p className="text-sm uppercase tracking-wide text-slate-500">Evaluator</p>
+        <h1 className="text-2xl font-bold text-ink">My evaluations</h1>
+        <p className="text-slate-600 text-sm">
           Complete evaluations for assigned faculty members during open periods.
         </p>
       </header>
 
       {Object.values(errors).some(e => e) && (
-        <p className="rounded-lg bg-amber-900/40 px-3 py-2 text-sm text-amber-100">
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700 border border-amber-200">
           {Object.values(errors).filter(Boolean).join(" | ")}
         </p>
       )}
@@ -172,7 +172,7 @@ export default async function EvaluatorPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="card glass">
               <div className="card-header">
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-ink">
                   {openAssignments.length} Open
                 </p>
               </div>
@@ -182,7 +182,7 @@ export default async function EvaluatorPage() {
             </div>
             <div className="card glass">
               <div className="card-header">
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-ink">
                   {completedAssignments.length} Completed
                 </p>
               </div>
@@ -197,10 +197,10 @@ export default async function EvaluatorPage() {
               <div key={assignment.id} className="card glass">
                 <div className="card-header">
                   <div>
-                    <h3 className="text-lg font-semibold text-white">
+                    <h3 className="text-lg font-semibold text-ink">
                       {assignment.faculty?.full_name}
                     </h3>
-                    <p className="text-xs text-slate-300">
+                    <p className="text-xs text-slate-500">
                       {assignment.period?.name} • {assignment.role.charAt(0).toUpperCase() + assignment.role.slice(1)} Evaluation
                     </p>
                   </div>
@@ -227,17 +227,17 @@ export default async function EvaluatorPage() {
 
             {completedAssignments.length > 0 && (
               <div className="mt-8 space-y-4">
-                <h2 className="text-lg font-bold text-white">Completed Evaluations</h2>
+                <h2 className="text-lg font-bold text-ink">Completed Evaluations</h2>
                 {completedAssignments.map((assignment) => {
                   const evaluation = evaluationMap.get(assignment.id);
                   return (
                     <div key={assignment.id} className="card glass opacity-75">
                       <div className="card-header">
                         <div>
-                          <h3 className="text-lg font-semibold text-white">
+                          <h3 className="text-lg font-semibold text-ink">
                             {assignment.faculty?.full_name}
                           </h3>
-                          <p className="text-xs text-slate-300">
+                          <p className="text-xs text-slate-500">
                             {assignment.period?.name} • Submitted{" "}
                             {evaluation?.submitted_at
                               ? new Date(evaluation.submitted_at).toLocaleDateString()

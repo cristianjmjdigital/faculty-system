@@ -4,28 +4,48 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
-type Props = {
-  next: string;
+type LoginFormProps = {
+  forceRedirect?: string;
 };
 
-export default function LoginForm({ next }: Props) {
+const roleRouteMap: Record<string, string> = {
+  admin: "/admin",
+  faculty: "/faculty",
+  student: "/student",
+  evaluator: "/evaluator",
+};
+
+export default function LoginForm({ forceRedirect }: LoginFormProps) {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const router = useRouter();
   const [status, setStatus] = useState<{ kind: "idle" | "error"; message?: string }>({ kind: "idle" });
   const [loading, setLoading] = useState(false);
 
+  const resolveRedirect = async (userId: string) => {
+    if (forceRedirect) return forceRedirect;
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (error) return "/student";
+    return roleRouteMap[data?.role ?? "student"] ?? "/student";
+  };
+
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!mounted) return;
       if (data.session) {
-        router.replace(next);
+        const redirectTo = await resolveRedirect(data.session.user.id);
+        router.replace(redirectTo);
       }
     });
     return () => {
       mounted = false;
     };
-  }, [next, router, supabase]);
+  }, [forceRedirect, router, supabase]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -44,7 +64,10 @@ export default function LoginForm({ next }: Props) {
       return;
     }
 
-    router.replace(next);
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
+    const redirectTo = userId ? await resolveRedirect(userId) : "/student";
+    router.replace(redirectTo);
   };
 
   return (
@@ -80,7 +103,7 @@ export default function LoginForm({ next }: Props) {
       <button type="submit" className="btn-primary w-full" disabled={loading}>
         {loading ? (
           <span className="flex items-center gap-2">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
             Signing in...
           </span>
         ) : (

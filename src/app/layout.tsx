@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Faculty Evaluation",
-  description: "Faculty evaluation and sentiment collection platform",
+  title: "RateMe: Faculty Evaluation with Decision Support System",
+  description: "RateMe: Faculty Evaluation with Decision Support System",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

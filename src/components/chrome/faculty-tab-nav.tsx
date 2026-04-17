@@ -26,7 +26,7 @@ export default function FacultyTabNav() {
             className={`whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
               active
                 ? "border-accent text-accent"
-                : "border-transparent text-slate-400 hover:border-white/20 hover:text-white"
+                : "border-transparent text-slate-600 hover:border-slate-200 hover:text-ink"
             }`}
           >
             {tab.label}

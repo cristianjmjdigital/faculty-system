@@ -122,13 +122,13 @@ export default async function RecordsPage() {
     <main className="section-shell space-y-8">
       <header className="space-y-1">
         <div className="badge">Admin</div>
-        <h1 className="mt-2 text-2xl font-bold text-white">Records overview</h1>
-        <p className="text-slate-400 text-sm">Courses, sections, and student sentiments.</p>
+        <h1 className="mt-2 text-2xl font-bold text-ink">Records overview</h1>
+        <p className="text-slate-600 text-sm">Courses, sections, and student sentiments.</p>
       </header>
 
       <div className="card glass">
         <div className="card-header">
-          <h2 className="text-lg font-semibold text-white">Create section</h2>
+          <h2 className="text-lg font-semibold text-ink">Create section</h2>
         </div>
         <div className="card-body bg-white/60 backdrop-blur">
           <AddSectionForm courses={courseOptions} faculty={facultyOptions} />
@@ -137,7 +137,7 @@ export default async function RecordsPage() {
 
       <div className="card glass">
         <div className="card-header">
-          <h2 className="text-lg font-semibold text-white">Courses</h2>
+          <h2 className="text-lg font-semibold text-ink">Courses</h2>
         </div>
         <div className="card-body bg-white/60 backdrop-blur">
           <div className="overflow-auto rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -171,7 +171,7 @@ export default async function RecordsPage() {
 
       <div className="card glass">
         <div className="card-header">
-          <h2 className="text-lg font-semibold text-white">Sections</h2>
+          <h2 className="text-lg font-semibold text-ink">Sections</h2>
         </div>
         <div className="card-body bg-white/60 backdrop-blur">
           <div className="overflow-auto rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -211,7 +211,7 @@ export default async function RecordsPage() {
 
       <div className="card glass">
         <div className="card-header">
-          <h2 className="text-lg font-semibold text-white">Student Sentiments</h2>
+          <h2 className="text-lg font-semibold text-ink">Student Sentiments</h2>
         </div>
         <div className="card-body bg-white/60 backdrop-blur">
           <div className="overflow-auto rounded-lg border border-slate-200 bg-white shadow-sm">
