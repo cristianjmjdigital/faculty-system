@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getDbServerClient } from "@/lib/db-server";
 import UsersTable from "@/components/admin/users-table";
 import AddUserForm from "@/components/admin/add-user-form";
@@ -46,6 +47,11 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
         <p className="text-slate-400 text-sm">
           Manage admin / faculty / student roles{roleFilter ? ` — filtered to ${roleFilter}.` : "."}
         </p>
+        <div className="pt-2">
+          <Link href="/admin/credentials" className="text-sm font-medium text-cyan-300 hover:text-cyan-200">
+            Open printable credential sheet
+          </Link>
+        </div>
       </header>
 
       <div className="card glass">
