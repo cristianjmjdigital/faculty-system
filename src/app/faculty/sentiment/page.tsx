@@ -2,6 +2,104 @@ import { loadFacultyData } from "@/lib/faculty-data";
 
 export const dynamic = "force-dynamic";
 
+const STOP_WORDS = new Set([
+  "the",
+  "and",
+  "for",
+  "that",
+  "this",
+  "with",
+  "was",
+  "are",
+  "were",
+  "have",
+  "has",
+  "had",
+  "from",
+  "they",
+  "them",
+  "their",
+  "about",
+  "very",
+  "really",
+  "just",
+  "but",
+  "you",
+  "your",
+  "our",
+  "can",
+  "could",
+  "would",
+  "more",
+  "some",
+  "into",
+  "than",
+  "when",
+  "what",
+  "who",
+  "how",
+  "been",
+  "being",
+  "because",
+  "faculty",
+  "teacher",
+  "class",
+  "student",
+]);
+
+function getOverallTone(positive: number, neutral: number, negative: number, total: number) {
+  if (total === 0) {
+    return { label: "No sentiment data yet", color: "text-slate-500" };
+  }
+
+  const sentimentIndex = (positive - negative) / total;
+  if (sentimentIndex >= 0.35) {
+    return { label: "Strongly positive overall tone", color: "text-emerald-600" };
+  }
+  if (sentimentIndex >= 0.1) {
+    return { label: "Mostly positive tone", color: "text-emerald-500" };
+  }
+  if (sentimentIndex <= -0.35) {
+    return { label: "Strong negative signal", color: "text-rose-600" };
+  }
+  if (sentimentIndex <= -0.1) {
+    return { label: "Mixed tone leaning negative", color: "text-rose-500" };
+  }
+  if (neutral >= Math.max(positive, negative)) {
+    return { label: "Mostly neutral tone", color: "text-slate-500" };
+  }
+  return { label: "Mixed tone", color: "text-amber-600" };
+}
+
+function getConfidenceLabel(total: number) {
+  if (total >= 10) return "High confidence";
+  if (total >= 5) return "Medium confidence";
+  if (total >= 3) return "Early pattern";
+  return "Too few submissions";
+}
+
+function extractTopThemes(comments: string[]): string[] {
+  const counts = new Map<string, number>();
+
+  comments.forEach((comment) => {
+    const tokens = comment
+      .toLowerCase()
+      .replace(/[^a-z\s]/g, " ")
+      .split(/\s+/)
+      .filter((word) => word.length >= 4 && !STOP_WORDS.has(word));
+
+    const uniqueTokens = new Set(tokens);
+    uniqueTokens.forEach((token) => {
+      counts.set(token, (counts.get(token) ?? 0) + 1);
+    });
+  });
+
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .map(([word]) => word);
+}
+
 export default async function SentimentPage() {
   const { sentiments } = await loadFacultyData();
 
@@ -13,6 +111,11 @@ export default async function SentimentPage() {
   const pct = (n: number) => (total > 0 ? Math.round((n / total) * 100) : 0);
 
   const withComments = sentiments.filter((s) => s.comments);
+  const commentTexts = withComments.map((s) => s.comments?.trim() ?? "").filter(Boolean);
+  const topThemes = extractTopThemes(commentTexts);
+  const tone = getOverallTone(positive.length, neutral.length, negative.length, total);
+  const confidence = getConfidenceLabel(total);
+  const netScore = total > 0 ? Math.round(((positive.length - negative.length) / total) * 100) : 0;
 
   return (
     <div className="section-shell space-y-8 fade-in">
@@ -30,6 +133,50 @@ export default async function SentimentPage() {
         </div>
       ) : (
         <>
+          <div className="card glass">
+            <div className="card-header">
+              <h2 className="text-lg font-semibold text-ink">Sentiment Summary</h2>
+              <span className="text-xs text-slate-500">{confidence}</span>
+            </div>
+            <div className="card-body space-y-3">
+              <p className="text-sm text-slate-700">
+                Overall signal: <span className={`font-semibold ${tone.color}`}>{tone.label}</span>
+              </p>
+              <p className="text-sm text-slate-700">
+                Net positivity score: <span className="font-semibold text-slate-900">{netScore}%</span>
+                <span className="ml-2 text-xs text-slate-500">(positive% minus negative%)</span>
+              </p>
+              {total >= 3 ? (
+                <p className="text-sm text-slate-600">
+                  Summary based on {total} submissions: students are giving a {tone.label.toLowerCase()}.
+                  {negative.length > positive.length
+                    ? " Prioritize follow-up on recurring concerns from comments."
+                    : " Continue reinforcing the practices students are responding well to."}
+                </p>
+              ) : (
+                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  This summary is preliminary. At least 3 sentiments are recommended for a stable trend.
+                </p>
+              )}
+
+              {topThemes.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">Common Comment Themes</p>
+                  <div className="flex flex-wrap gap-2">
+                    {topThemes.map((theme) => (
+                      <span
+                        key={theme}
+                        className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
+                      >
+                        {theme}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Distribution cards */}
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="stat-card p-5 text-center">
