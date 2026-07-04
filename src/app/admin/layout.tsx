@@ -1,8 +1,21 @@
 import type { ReactNode } from "react";
 import SidebarNav from "@/components/chrome/sidebar-nav";
 import Link from "next/link";
+import { getServerSessionUser, roleDefaultPath } from "@/lib/local-auth";
+import { redirect } from "next/navigation";
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+  const user = await getServerSessionUser();
+  if (!user) {
+    redirect("/auth/login/admin?next=%2Fadmin");
+  }
+  if (user.must_change_password) {
+    redirect("/auth/change-password");
+  }
+  if (user.role !== "admin") {
+    redirect(roleDefaultPath(user.role));
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="flex">
@@ -17,11 +30,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </Link>
             <SidebarNav />
             <div className="mt-auto pt-8 border-t border-white/[0.06]">
-              <Link href="/auth/login" className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-slate-400 transition hover:bg-white/[0.06] hover:text-white">
+              <Link href="/api/auth/logout" className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-slate-400 transition hover:bg-white/[0.06] hover:text-white">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
                 Sign out
+              </Link>
+              <Link href="/account" className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-slate-400 transition hover:bg-white/[0.06] hover:text-white">
+                Update Profile
               </Link>
             </div>
           </div>

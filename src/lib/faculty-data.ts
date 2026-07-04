@@ -1,5 +1,6 @@
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getDbServerClient } from "@/lib/db-server";
 import { redirect } from "next/navigation";
+import { getServerSessionUser } from "@/lib/local-auth";
 
 export type SectionRow = {
   id: string;
@@ -14,6 +15,8 @@ export type Sentiment = {
   sentiment: string;
   comments: string | null;
   created_at: string;
+  periodName: string | null;
+  moduleLabel: string | null;
 };
 
 export type EvaluationData = {
@@ -32,6 +35,7 @@ export type FacultyProfile = {
   full_name: string | null;
   email: string | null;
   role: string;
+  department_id?: string | null;
 };
 
 export type FacultyData = {
@@ -49,30 +53,29 @@ function calcAvg(scores: number[]): number {
 }
 
 export async function loadFacultyData(): Promise<FacultyData> {
-  const supabase = getSupabaseServerClient();
-
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  const user = userData?.user ?? null;
-
-  if (!user) {
+  const sessionUser = await getServerSessionUser();
+  if (!sessionUser) {
     redirect("/auth/login?next=%2Ffaculty");
   }
 
+  const db = getDbServerClient();
+  const user = { id: sessionUser.id };
+
   const [profileRes, sectionsRes, sentimentsRes, evaluationsRes] = await Promise.all([
-    supabase.from("profiles").select("id, full_name, email, role").eq("id", user.id).maybeSingle(),
-    supabase
+    db.from("profiles").select("id, full_name, email, role, department_id").eq("id", user.id).maybeSingle(),
+    db
       .from("sections")
       .select("id, term, academic_year, schedule, course:course_id ( code, title )")
       .eq("faculty_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50),
-    supabase
+    db
       .from("student_sentiments")
-      .select("id, sentiment, comments, created_at")
+      .select("id, sentiment, comments, created_at, period:evaluation_periods ( name ), section:section_id ( term, course:course_id ( code ) )")
       .eq("faculty_id", user.id)
       .order("created_at", { ascending: false })
       .limit(200),
-    supabase
+    db
       .from("evaluations")
       .select(`
         status,
@@ -98,7 +101,19 @@ export async function loadFacultyData(): Promise<FacultyData> {
     course: Array.isArray(s.course) ? s.course[0] ?? null : s.course ?? null,
   }));
 
-  const sentiments: Sentiment[] = sentimentsRes.data ?? [];
+  const sentiments: Sentiment[] = ((sentimentsRes.data ?? []) as any[]).map((s) => {
+    const section = Array.isArray(s.section) ? s.section[0] ?? null : s.section ?? null;
+    const period = Array.isArray(s.period) ? s.period[0] ?? null : s.period ?? null;
+    const courseCode = section?.course?.code ?? null;
+    return {
+      id: s.id,
+      sentiment: s.sentiment,
+      comments: s.comments ?? null,
+      created_at: s.created_at,
+      periodName: period?.name ?? null,
+      moduleLabel: courseCode ? `${courseCode}${section?.term ? ` (${section.term})` : ""}` : null,
+    };
+  });
 
   const evaluations: EvaluationData[] = ((evaluationsRes.data ?? []) as any[]).map((ev) => {
     const byCategory: Record<string, number[]> = {};
@@ -125,7 +140,7 @@ export async function loadFacultyData(): Promise<FacultyData> {
     };
   });
 
-  const errorMessage = userError?.message ?? profileRes.error?.message ?? sectionsRes.error?.message ?? null;
+  const errorMessage = profileRes.error?.message ?? sectionsRes.error?.message ?? null;
 
   return {
     user: { id: user.id },
@@ -136,3 +151,5 @@ export async function loadFacultyData(): Promise<FacultyData> {
     errorMessage,
   };
 }
+
+

@@ -1,4 +1,4 @@
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getDbServerClient } from "@/lib/db-server";
 import EvaluatorAssignmentManager from "@/components/admin/evaluator-assignment-manager";
 import Link from "next/link";
 
@@ -36,23 +36,23 @@ type Assignment = {
 };
 
 async function loadData() {
-  const supabase = getSupabaseServerClient();
+  const db = getDbServerClient();
 
   const [facultyResult, periodsResult, sectionsResult, assignmentsResult] = await Promise.all([
-    supabase
+    db
       .from("profiles")
       .select("id, full_name, email")
       .eq("role", "faculty")
       .order("full_name", { ascending: true }),
-    supabase
+    db
       .from("evaluation_periods")
       .select("id, name, status")
       .order("start_date", { ascending: false }),
-    supabase
+    db
       .from("sections")
       .select("id, term, course:course_id ( code, title )")
       .order("term", { ascending: false }),
-    supabase
+    db
       .from("evaluator_assignments")
       .select(`
         id,
@@ -144,3 +144,5 @@ export default async function AssignmentsPage() {
     </main>
   );
 }
+
+

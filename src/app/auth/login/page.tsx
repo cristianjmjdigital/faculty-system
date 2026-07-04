@@ -1,18 +1,17 @@
 import LoginForm from "./login-form";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getServerSessionUser, roleDefaultPath } from "@/lib/local-auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function LoginPage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
-  const supabase = getSupabaseServerClient();
   const nextParam = searchParams?.next;
-  const next = typeof nextParam === "string" && nextParam.startsWith("/") ? nextParam : "/student";
+  const next = typeof nextParam === "string" && nextParam.startsWith("/") ? nextParam : null;
 
-  const { data } = await supabase.auth.getUser();
-  if (data?.user) {
-    redirect(next);
+  const user = await getServerSessionUser();
+  if (user) {
+    redirect(next ?? roleDefaultPath(user.role));
   }
 
   return (
@@ -76,7 +75,13 @@ export default async function LoginPage({ searchParams }: { searchParams?: Recor
             <p className="text-muted">Enter your credentials to access the portal.</p>
           </div>
 
-          <LoginForm next={next} />
+          <div className="grid gap-2 sm:grid-cols-3">
+            <Link href="/auth/login/admin" className="btn-secondary !py-2 text-xs">Admin Login</Link>
+            <Link href="/auth/login/faculty" className="btn-secondary !py-2 text-xs">Faculty Login</Link>
+            <Link href="/auth/login/student" className="btn-secondary !py-2 text-xs">Student Login</Link>
+          </div>
+
+          <LoginForm next={next ?? ""} />
 
           <p className="text-center text-xs text-muted">
             <Link href="/" className="font-medium text-accent hover:text-accent-light transition-colors">

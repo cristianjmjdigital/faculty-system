@@ -2,7 +2,7 @@
 
 import { useMemo, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getDbBrowserClient } from "@/lib/db-browser";
 
 type Period = {
   id: string;
@@ -24,8 +24,13 @@ type FormState = {
   status: string;
 };
 
+function periodKey(period: Period, index: number) {
+  if (period.id) return period.id;
+  return `${period.name}-${period.start_date ?? ""}-${period.end_date ?? ""}-${index}`;
+}
+
 export default function PeriodManager({ initialPeriods, error }: Props) {
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const db = useMemo(() => getDbBrowserClient(), []);
   const router = useRouter();
   const [periods, setPeriods] = useState<Period[]>(initialPeriods);
   const [form, setForm] = useState<FormState>({ name: "", start_date: "", end_date: "", status: "draft" });
@@ -45,7 +50,7 @@ export default function PeriodManager({ initialPeriods, error }: Props) {
       rubric_version: "v1",
     };
 
-    const { data, error: insertError } = await supabase
+    const { data, error: insertError } = await db
       .from("evaluation_periods")
       .insert(payload)
       .select("id, name, status, start_date, end_date")
@@ -58,7 +63,10 @@ export default function PeriodManager({ initialPeriods, error }: Props) {
     }
 
     if (data) {
-      setPeriods((prev) => [data, ...prev]);
+      setPeriods((prev) => {
+        const withoutDuplicate = prev.filter((period) => period.id !== data.id);
+        return [data, ...withoutDuplicate];
+      });
       setForm({ name: "", start_date: "", end_date: "", status: "draft" });
       router.refresh();
     }
@@ -68,7 +76,7 @@ export default function PeriodManager({ initialPeriods, error }: Props) {
 
   const handleUpdateStatus = async (id: string, status: string) => {
     setMessage(null);
-    const { error: updateError } = await supabase
+    const { error: updateError } = await db
       .from("evaluation_periods")
       .update({ status })
       .eq("id", id);
@@ -84,7 +92,7 @@ export default function PeriodManager({ initialPeriods, error }: Props) {
 
   const handleDelete = async (id: string) => {
     setMessage(null);
-    const { error: deleteError } = await supabase.from("evaluation_periods").delete().eq("id", id);
+    const { error: deleteError } = await db.from("evaluation_periods").delete().eq("id", id);
     if (deleteError) {
       setMessage(deleteError.message);
       return;
@@ -136,8 +144,8 @@ export default function PeriodManager({ initialPeriods, error }: Props) {
         {periods.length === 0 ? (
           <p className="p-4 text-sm text-slate-600">No periods yet.</p>
         ) : (
-          periods.map((period) => (
-            <div key={period.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          periods.map((period, index) => (
+            <div key={periodKey(period, index)} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="font-semibold text-slate-900">{period.name}</p>
                 <p className="text-xs text-slate-500">
@@ -165,3 +173,5 @@ export default function PeriodManager({ initialPeriods, error }: Props) {
     </div>
   );
 }
+
+

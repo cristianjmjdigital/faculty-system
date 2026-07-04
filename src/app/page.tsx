@@ -28,11 +28,12 @@ const modules = [
   { title: "Performance Rating", desc: "Faculty performance indicators across rubric categories.", href: "/faculty" },
   { title: "Evaluation Summary", desc: "Rollup of submitted evaluations by rubric category and period.", href: "/faculty" },
   { title: "Sentiment Report", desc: "Student qualitative feedback layered beside scored evaluations.", href: "/faculty" },
+  { title: "Program Head Portal", desc: "Department-wide summary results for all faculty members.", href: "/program-head" },
   { title: "Data Graphs & Analysis", desc: "Charts and recommendation insights for informed decisions.", href: "/faculty" },
 ];
 
 const stats = [
-  { label: "Roles", value: "3", sub: "Admin, Faculty, Student" },
+  { label: "Roles", value: "4", sub: "Admin, Faculty, Program Head, Student" },
   { label: "Evaluation Categories", value: "4", sub: "Rubric-based scoring" },
   { label: "Reports", value: "4", sub: "Rating, Summary, Sentiment, Graphs" },
 ];
@@ -148,3 +149,4 @@ export default function HomePage() {
     </main>
   );
 }
+

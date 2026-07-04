@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getDbBrowserClient } from "@/lib/db-browser";
 
 type PeriodOption = {
   id: string;
@@ -36,7 +36,7 @@ type Props = {
 };
 
 export default function StudentForm({ periods, sections, categories }: Props) {
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const db = useMemo(() => getDbBrowserClient(), []);
   const [status, setStatus] = useState<{ kind: "idle" | "success" | "error"; message?: string }>({ kind: "idle" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [scores, setScores] = useState<Record<string, number>>({});
@@ -63,9 +63,11 @@ export default function StudentForm({ periods, sections, categories }: Props) {
     const sectionId = (formData.get("sectionId") as string) || null;
     const overallComment = (formData.get("comments") as string) || "";
 
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData?.user) {
-      setStatus({ kind: "error", message: userError?.message || "You must be signed in to submit." });
+    const meRes = await fetch("/api/auth/me", { cache: "no-store" });
+    const mePayload = await meRes.json().catch(() => ({}));
+    const sessionUser = mePayload.user;
+    if (!meRes.ok || !sessionUser) {
+      setStatus({ kind: "error", message: "You must be signed in to submit." });
       setIsSubmitting(false);
       return;
     }
@@ -86,12 +88,12 @@ export default function StudentForm({ periods, sections, categories }: Props) {
       return;
     }
 
-    const { data: assignment, error: assignmentError } = await supabase
+    const { data: assignment, error: assignmentError } = await db
       .from("evaluator_assignments")
       .select("id")
       .eq("period_id", periodId)
       .eq("section_id", sectionId)
-      .eq("evaluator_id", userData.user.id)
+      .eq("evaluator_id", sessionUser.id)
       .maybeSingle();
 
     if (assignmentError) {
@@ -106,7 +108,7 @@ export default function StudentForm({ periods, sections, categories }: Props) {
       return;
     }
 
-    const { data: evaluation, error: evaluationError } = await supabase
+    const { data: evaluation, error: evaluationError } = await db
       .from("evaluations")
       .insert({ assignment_id: assignment.id, status: "submitted", overall_comment: overallComment || null })
       .select("id")
@@ -127,7 +129,7 @@ export default function StudentForm({ periods, sections, categories }: Props) {
       }))
     );
 
-    const { error: responseError } = await supabase.from("evaluation_responses").insert(payload);
+    const { error: responseError } = await db.from("evaluation_responses").insert(payload);
 
     if (responseError) {
       setStatus({ kind: "error", message: responseError.message });
@@ -294,3 +296,5 @@ export default function StudentForm({ periods, sections, categories }: Props) {
     </form>
   );
 }
+
+

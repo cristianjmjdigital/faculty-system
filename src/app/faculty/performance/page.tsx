@@ -6,6 +6,18 @@ export default async function PerformancePage() {
   const { evaluations } = await loadFacultyData();
 
   const submitted = evaluations.filter((e) => e.status === "submitted");
+  const evaluationTotals = submitted.map((ev) => {
+    const allScores = Object.values(ev.categoryScores).flat();
+    const totalPoints = allScores.reduce((sum, score) => sum + score, 0);
+    const maxPoints = allScores.length * 5;
+    return {
+      evaluatorName: ev.evaluatorName,
+      role: ev.role,
+      periodName: ev.periodName,
+      totalPoints,
+      maxPoints,
+    };
+  });
 
   // Aggregate category scores across all submitted evaluations
   const categoryTotals: Record<string, { sum: number; count: number }> = {};
@@ -25,10 +37,9 @@ export default async function PerformancePage() {
     }))
     .sort((a, b) => b.avg - a.avg);
 
-  const overallAvg =
-    categories.length > 0
-      ? Number((categories.reduce((s, c) => s + c.avg, 0) / categories.length).toFixed(2))
-      : 0;
+  const overallPoints = evaluationTotals.reduce((sum, item) => sum + item.totalPoints, 0);
+  const overallMaxPoints = evaluationTotals.reduce((sum, item) => sum + item.maxPoints, 0);
+  const overallPercent = overallMaxPoints > 0 ? Number(((overallPoints / overallMaxPoints) * 100).toFixed(2)) : 0;
 
   // Per-evaluator breakdown
   const byEvaluator = submitted.map((ev) => ({
@@ -78,8 +89,11 @@ export default async function PerformancePage() {
           {/* Overall rating */}
           <div className="stat-card p-6 text-center">
             <p className="text-xs font-medium uppercase tracking-wider text-slate-400">Overall Performance Rating</p>
-            <p className={`mt-2 text-5xl font-extrabold ${ratingColor(overallAvg)}`}>
-              {overallAvg} <span className="text-lg font-normal text-slate-500">/ 5</span>
+            <p className={`mt-2 text-5xl font-extrabold ${ratingColor(overallPercent / 20)}`}>
+              {overallPoints} <span className="text-lg font-normal text-slate-500">/ {overallMaxPoints || 100}</span>
+            </p>
+            <p className="mt-2 text-xs text-slate-400">
+              Formula: Sum of all points from submitted evaluations divided by the number of submitted evaluations.
             </p>
           </div>
 
@@ -120,18 +134,18 @@ export default async function PerformancePage() {
                       <th>Evaluator</th>
                       <th>Role</th>
                       <th>Period</th>
-                      <th className="text-right">Overall</th>
+                      <th className="text-right">Total Points</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {byEvaluator.map((ev, i) => (
+                    {evaluationTotals.map((ev, i) => (
                       <tr key={i}>
-                        <td className="font-semibold text-slate-900">{ev.name}</td>
+                        <td className="font-semibold text-slate-900">{ev.evaluatorName}</td>
                         <td>
                           <span className="pill capitalize">{ev.role}</span>
                         </td>
-                        <td className="text-sm text-slate-600">{ev.period}</td>
-                        <td className="text-right font-bold text-slate-900">{ev.overall} / 5</td>
+                        <td className="text-sm text-slate-600">{ev.periodName}</td>
+                        <td className="text-right font-bold text-slate-900">{ev.totalPoints} / {ev.maxPoints}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -144,3 +158,4 @@ export default async function PerformancePage() {
     </div>
   );
 }
+

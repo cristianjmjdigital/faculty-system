@@ -1,7 +1,8 @@
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getDbServerClient } from "@/lib/db-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import EvaluationForm from "@/components/evaluation-form";
+import { getServerSessionUser, roleDefaultPath } from "@/lib/local-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -54,22 +55,23 @@ type Evaluation = {
 };
 
 async function loadData() {
-  const supabase = getSupabaseServerClient();
-
-  const {
-    data: userData,
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !userData?.user) {
-    redirect("/auth/login?next=%2Fevaluator");
+  const sessionUser = await getServerSessionUser();
+  if (!sessionUser) {
+    redirect("/auth/login/faculty?next=%2Fevaluator");
+  }
+  if (sessionUser.must_change_password) {
+    redirect("/auth/change-password");
+  }
+  if (sessionUser.role !== "evaluator") {
+    redirect(roleDefaultPath(sessionUser.role));
   }
 
-  const userId = userData.user.id;
+  const db = getDbServerClient();
+  const userId = sessionUser.id;
 
   // First, fetch assignments and categories in parallel
   const [assignmentsResult, categoriesResult] = await Promise.all([
-    supabase
+    db
       .from("evaluator_assignments")
       .select(`
         id,
@@ -85,7 +87,7 @@ async function loadData() {
       `)
       .eq("evaluator_id", userId)
       .order("created_at", { ascending: false }),
-    supabase
+    db
       .from("rubric_categories")
       .select("id, label, description, order_index, rubric_items ( id, prompt, max_score, order_index )")
       .order("order_index", { ascending: true }),
@@ -106,7 +108,7 @@ async function loadData() {
   const assignmentIds = assignments.map(a => a.id);
 
   // Then fetch evaluations based on assignment IDs
-  const evaluationsResult = await supabase
+  const evaluationsResult = await db
     .from("evaluations")
     .select("id, assignment_id, status, submitted_at, overall_comment")
     .in("assignment_id", assignmentIds.length > 0 ? assignmentIds : ["00000000-0000-0000-0000-000000000000"]);
@@ -268,3 +270,5 @@ export default async function EvaluatorPage() {
     </main>
   );
 }
+
+

@@ -1,8 +1,8 @@
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getDbServerClient } from "@/lib/db-server";
 import UsersTable from "@/components/admin/users-table";
 import AddUserForm from "@/components/admin/add-user-form";
 
-const allowedRoles = new Set(["admin", "faculty", "student", "evaluator"]);
+const allowedRoles = new Set(["admin", "faculty", "student", "evaluator", "program_head"]);
 
 export const dynamic = "force-dynamic";
 
@@ -13,14 +13,14 @@ type UsersPageProps = {
 };
 
 export default async function UsersPage({ searchParams }: UsersPageProps) {
-  const supabase = getSupabaseServerClient();
+  const db = getDbServerClient();
   const roleFilter = searchParams?.role && allowedRoles.has(searchParams.role) ? searchParams.role : undefined;
-  const defaultRoleForForm = (roleFilter as "admin" | "faculty" | "student" | "evaluator" | undefined) ?? "faculty";
+  const defaultRoleForForm = (roleFilter as "admin" | "faculty" | "student" | "evaluator" | "program_head" | undefined) ?? "faculty";
 
   const [departmentsRes, profilesRes] = await Promise.all([
-    supabase.from("departments").select("id, name").order("name", { ascending: true }),
+    db.from("departments").select("id, name").order("name", { ascending: true }),
     (function fetchProfiles() {
-      let query = supabase
+      let query = db
         .from("profiles")
         .select("id, full_name, email, role, department_id")
         .order("full_name", { ascending: true })
@@ -69,3 +69,5 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
     </main>
   );
 }
+
+

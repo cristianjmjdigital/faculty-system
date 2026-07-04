@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getDbBrowserClient } from "@/lib/db-browser";
 
 type Period = { id: string; name: string };
 type Section = { id: string; label: string };
@@ -15,7 +15,7 @@ type Props = {
 };
 
 export default function SelfEvaluationForm({ periods, sections, categories }: Props) {
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const db = useMemo(() => getDbBrowserClient(), []);
   const [status, setStatus] = useState<{ kind: "idle" | "success" | "error"; message?: string }>({ kind: "idle" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [scores, setScores] = useState<Record<string, number>>({});
@@ -34,17 +34,20 @@ export default function SelfEvaluationForm({ periods, sections, categories }: Pr
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const form = event.currentTarget;
     setStatus({ kind: "idle" });
     setIsSubmitting(true);
 
-    const formData = new FormData(event.currentTarget);
+    const formData = new FormData(form);
     const periodId = (formData.get("periodId") as string) || null;
     const sectionId = (formData.get("sectionId") as string) || null;
     const overallComment = (formData.get("comments") as string) || "";
 
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData?.user) {
-      setStatus({ kind: "error", message: userError?.message || "You must be signed in." });
+    const meRes = await fetch("/api/auth/me", { cache: "no-store" });
+    const mePayload = await meRes.json().catch(() => ({}));
+    const sessionUser = mePayload.user;
+    if (!meRes.ok || !sessionUser) {
+      setStatus({ kind: "error", message: "You must be signed in." });
       setIsSubmitting(false);
       return;
     }
@@ -65,10 +68,10 @@ export default function SelfEvaluationForm({ periods, sections, categories }: Pr
       return;
     }
 
-    const userId = userData.user.id;
+    const userId = sessionUser.id;
 
     // Look for existing self-evaluation assignment
-    let { data: assignment, error: assignmentError } = await supabase
+    let { data: assignment, error: assignmentError } = await db
       .from("evaluator_assignments")
       .select("id")
       .eq("period_id", periodId)
@@ -86,7 +89,7 @@ export default function SelfEvaluationForm({ periods, sections, categories }: Pr
 
     // Auto-create self assignment if it doesn't exist
     if (!assignment) {
-      const { data: newAssignment, error: createErr } = await supabase
+      const { data: newAssignment, error: createErr } = await db
         .from("evaluator_assignments")
         .insert({
           period_id: periodId,
@@ -107,7 +110,7 @@ export default function SelfEvaluationForm({ periods, sections, categories }: Pr
     }
 
     // Check for existing evaluation on this assignment
-    const { data: existingEval } = await supabase
+    const { data: existingEval } = await db
       .from("evaluations")
       .select("id")
       .eq("assignment_id", assignment.id)
@@ -117,7 +120,7 @@ export default function SelfEvaluationForm({ periods, sections, categories }: Pr
 
     if (existingEval) {
       // Update existing
-      const { error: updateErr } = await supabase
+      const { error: updateErr } = await db
         .from("evaluations")
         .update({ status: "submitted", overall_comment: overallComment || null, submitted_at: new Date().toISOString() })
         .eq("id", existingEval.id);
@@ -129,10 +132,10 @@ export default function SelfEvaluationForm({ periods, sections, categories }: Pr
       }
 
       // Remove old responses
-      await supabase.from("evaluation_responses").delete().eq("evaluation_id", existingEval.id);
+      await db.from("evaluation_responses").delete().eq("evaluation_id", existingEval.id);
       evaluationId = existingEval.id;
     } else {
-      const { data: newEval, error: evalErr } = await supabase
+      const { data: newEval, error: evalErr } = await db
         .from("evaluations")
         .insert({ assignment_id: assignment.id, status: "submitted", overall_comment: overallComment || null })
         .select("id")
@@ -155,7 +158,7 @@ export default function SelfEvaluationForm({ periods, sections, categories }: Pr
       }))
     );
 
-    const { error: responseError } = await supabase.from("evaluation_responses").insert(payload);
+    const { error: responseError } = await db.from("evaluation_responses").insert(payload);
 
     if (responseError) {
       setStatus({ kind: "error", message: responseError.message });
@@ -166,7 +169,7 @@ export default function SelfEvaluationForm({ periods, sections, categories }: Pr
     setStatus({ kind: "success", message: "Self-evaluation submitted successfully!" });
     setScores({});
     setIsSubmitting(false);
-    event.currentTarget.reset();
+    form.reset();
   };
 
   return (
@@ -317,3 +320,5 @@ export default function SelfEvaluationForm({ periods, sections, categories }: Pr
     </form>
   );
 }
+
+

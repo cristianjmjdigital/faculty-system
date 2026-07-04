@@ -2,7 +2,7 @@
 
 import { useState, useMemo, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getDbBrowserClient } from "@/lib/db-browser";
 
 type Faculty = {
   id: string;
@@ -50,7 +50,7 @@ export default function EvaluatorAssignmentManager({
   periods,
   sections,
 }: Props) {
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const db = useMemo(() => getDbBrowserClient(), []);
   const router = useRouter();
   const [assignments, setAssignments] = useState<Assignment[]>(initialAssignments);
   const [message, setMessage] = useState<string | null>(null);
@@ -75,7 +75,7 @@ export default function EvaluatorAssignmentManager({
       return;
     }
 
-    const { error } = await supabase.from("evaluator_assignments").insert({
+    const { error } = await db.from("evaluator_assignments").insert({
       period_id: formData.period_id,
       faculty_id: formData.faculty_id,
       evaluator_id: formData.evaluator_id,
@@ -106,7 +106,7 @@ export default function EvaluatorAssignmentManager({
     if (!confirm("Delete this assignment?")) return;
 
     setMessage(null);
-    const { error } = await supabase.from("evaluator_assignments").delete().eq("id", id);
+    const { error } = await db.from("evaluator_assignments").delete().eq("id", id);
 
     if (error) {
       setMessage(`Error: ${error.message}`);
@@ -252,3 +252,5 @@ export default function EvaluatorAssignmentManager({
     </div>
   );
 }
+
+

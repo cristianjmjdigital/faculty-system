@@ -1,32 +1,32 @@
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getDbServerClient } from "@/lib/db-server";
 import { redirect } from "next/navigation";
 import SelfEvaluationForm from "./self-evaluation-form";
+import { getServerSessionUser } from "@/lib/local-auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function SelfEvaluationPage() {
-  const supabase = getSupabaseServerClient();
-
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData?.user) {
+  const sessionUser = await getServerSessionUser();
+  if (!sessionUser) {
     redirect("/auth/login?next=%2Ffaculty%2Fself-evaluation");
   }
 
-  const userId = userData.user.id;
+  const db = getDbServerClient();
+  const userId = sessionUser.id;
 
   const [periodsResult, sectionsResult, categoriesResult] = await Promise.all([
-    supabase
+    db
       .from("evaluation_periods")
       .select("id, name, status, start_date")
       .eq("status", "open")
       .order("start_date", { ascending: true }),
-    supabase
+    db
       .from("sections")
       .select("id, term, academic_year, schedule, course:course_id ( code, title )")
       .eq("faculty_id", userId)
       .order("created_at", { ascending: false })
       .limit(50),
-    supabase
+    db
       .from("rubric_categories")
       .select("id, label, description, order_index, rubric_items ( id, prompt, order_index, max_score )")
       .order("order_index", { ascending: true })
@@ -97,3 +97,5 @@ export default async function SelfEvaluationPage() {
     </div>
   );
 }
+
+

@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getDbBrowserClient } from "@/lib/db-browser";
 
 type CourseOption = { id: string; label: string };
 type FacultyOption = { id: string; name: string };
@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function AddSectionForm({ courses, faculty }: Props) {
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const db = useMemo(() => getDbBrowserClient(), []);
   const termOptions = useMemo(() => ["1st Sem", "2nd Sem", "Summer"], []);
   const academicYearOptions = useMemo(() => {
     const now = new Date();
@@ -66,7 +66,7 @@ export default function AddSectionForm({ courses, faculty }: Props) {
       return;
     }
 
-    const { error } = await supabase.from("sections").insert([
+    const { error } = await db.from("sections").insert([
       {
         course_id: courseId,
         faculty_id: facultyId,
@@ -203,3 +203,4 @@ export default function AddSectionForm({ courses, faculty }: Props) {
     </form>
   );
 }
+

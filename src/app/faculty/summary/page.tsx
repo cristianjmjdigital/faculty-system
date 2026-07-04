@@ -3,7 +3,7 @@ import { loadFacultyData } from "@/lib/faculty-data";
 export const dynamic = "force-dynamic";
 
 export default async function SummaryPage() {
-  const { evaluations } = await loadFacultyData();
+  const { evaluations, sentiments } = await loadFacultyData();
 
   // Group by period
   const byPeriod: Record<string, typeof evaluations> = {};
@@ -33,6 +33,13 @@ export default async function SummaryPage() {
         periods.map(([periodName, evals]) => {
           const submitted = evals.filter((e) => e.status === "submitted");
           const draft = evals.filter((e) => e.status === "draft");
+          const periodSentiments = sentiments.filter((s) => s.periodName === periodName && s.comments);
+          const sentimentsByModule = periodSentiments.reduce<Record<string, typeof periodSentiments>>((acc, sentiment) => {
+            const key = sentiment.moduleLabel || "General";
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(sentiment);
+            return acc;
+          }, {});
 
           return (
             <div key={periodName} className="card glass">
@@ -115,6 +122,33 @@ export default async function SummaryPage() {
                     </details>
                   );
                 })}
+
+                {periodSentiments.length > 0 && (
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <p className="text-sm font-semibold text-white">Comments by Evaluation Module</p>
+                      <span className="text-xs text-slate-400">{periodSentiments.length} sentiment comment{periodSentiments.length !== 1 ? "s" : ""}</span>
+                    </div>
+                    <div className="space-y-3">
+                      {Object.entries(sentimentsByModule).map(([module, rows]) => (
+                        <div key={module} className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
+                          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-300">{module}</p>
+                          <div className="space-y-2">
+                            {rows.map((row) => (
+                              <div key={row.id} className="rounded-md bg-black/20 px-3 py-2">
+                                <div className="mb-1 flex items-center justify-between text-xs">
+                                  <span className="capitalize text-slate-300">{row.sentiment}</span>
+                                  <span className="text-slate-500">{new Date(row.created_at).toLocaleDateString()}</span>
+                                </div>
+                                <p className="text-sm text-slate-200">{row.comments}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -123,3 +157,4 @@ export default async function SummaryPage() {
     </div>
   );
 }
+

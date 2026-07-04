@@ -34,8 +34,13 @@ CREATE TABLE profiles (
   id CHAR(36) PRIMARY KEY,
   full_name VARCHAR(255),
   email VARCHAR(255) UNIQUE,
-  role ENUM('admin','faculty','student','evaluator') NOT NULL DEFAULT 'faculty',
+  password VARCHAR(255) NOT NULL DEFAULT '123456',
+  role ENUM('admin','faculty','student','evaluator','program_head') NOT NULL DEFAULT 'faculty',
   department_id CHAR(36),
+  phone VARCHAR(64),
+  address TEXT,
+  position_title VARCHAR(255),
+  must_change_password TINYINT(1) NOT NULL DEFAULT 1,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_profiles_department FOREIGN KEY (department_id) REFERENCES departments(id)
 ) ENGINE=InnoDB;

@@ -1,25 +1,26 @@
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getDbServerClient } from "@/lib/db-server";
 import { redirect } from "next/navigation";
 import SentimentForm from "./sentiment-form";
+import { getServerSessionUser } from "@/lib/local-auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function SentimentPage() {
-  const supabase = getSupabaseServerClient();
-
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData?.user) {
+  const sessionUser = await getServerSessionUser();
+  if (!sessionUser) {
     redirect("/auth/login?next=%2Fstudent%2Fsentiment");
   }
 
+  const db = getDbServerClient();
+
   // Load open periods, sections (so student can pick one), and faculty list
   const [periodsRes, sectionsRes] = await Promise.all([
-    supabase
+    db
       .from("evaluation_periods")
       .select("id, name")
       .eq("status", "open")
       .order("start_date", { ascending: true }),
-    supabase
+    db
       .from("sections")
       .select("id, term, academic_year, schedule, course:course_id ( code, title ), faculty:faculty_id ( id, full_name )")
       .limit(100),
@@ -60,3 +61,5 @@ export default async function SentimentPage() {
     </div>
   );
 }
+
+

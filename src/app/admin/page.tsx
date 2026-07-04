@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getDbServerClient } from "@/lib/db-server";
 import PeriodManager from "@/components/admin/period-manager";
 import RubricManager from "@/components/admin/rubric-manager";
 
@@ -28,22 +28,22 @@ type Metrics = {
 };
 
 async function loadData() {
-  const supabase = getSupabaseServerClient();
+  const db = getDbServerClient();
 
   const [periodsResult, categoriesResult, periodCount, itemCount, sentimentCount, sectionCount] = await Promise.all([
-    supabase
+    db
       .from("evaluation_periods")
       .select("id, name, status, start_date, end_date")
       .order("start_date", { ascending: false })
       .limit(50),
-    supabase
+    db
       .from("rubric_categories")
       .select("id, label, description, order_index, rubric_items ( id, prompt, order_index )")
       .order("order_index", { ascending: true }),
-    supabase.from("evaluation_periods").select("id", { count: "exact", head: true }),
-    supabase.from("rubric_items").select("id", { count: "exact", head: true }),
-    supabase.from("student_sentiments").select("id", { count: "exact", head: true }),
-    supabase.from("sections").select("id", { count: "exact", head: true }),
+    db.from("evaluation_periods").select("id", { count: "exact", head: true }),
+    db.from("rubric_items").select("id", { count: "exact", head: true }),
+    db.from("student_sentiments").select("id", { count: "exact", head: true }),
+    db.from("sections").select("id", { count: "exact", head: true }),
   ]);
 
   const periods: Period[] = periodsResult.data ?? [];
@@ -152,3 +152,5 @@ function StatCard({ title, value, tone }: StatProps) {
     </div>
   );
 }
+
+

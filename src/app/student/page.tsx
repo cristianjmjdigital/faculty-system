@@ -1,32 +1,32 @@
 import Link from "next/link";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getDbServerClient } from "@/lib/db-server";
 import { redirect } from "next/navigation";
+import { getServerSessionUser } from "@/lib/local-auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function StudentDashboardPage() {
-  const supabase = getSupabaseServerClient();
-
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData?.user) {
+  const sessionUser = await getServerSessionUser();
+  if (!sessionUser) {
     redirect("/auth/login?next=%2Fstudent");
   }
 
-  const userId = userData.user.id;
+  const db = getDbServerClient();
+  const userId = sessionUser.id;
 
   const [profileRes, evaluationsRes, sentimentsRes, periodsRes] = await Promise.all([
-    supabase.from("profiles").select("id, full_name, email, role").eq("id", userId).maybeSingle(),
-    supabase
+    db.from("profiles").select("id, full_name, email, role").eq("id", userId).maybeSingle(),
+    db
       .from("evaluations")
       .select("id, status, submitted_at, assignment:assignment_id ( role, faculty:faculty_id ( full_name ), period:evaluation_periods ( name ) )")
       .eq("assignment.evaluator_id", userId),
-    supabase
+    db
       .from("student_sentiments")
       .select("id, sentiment, comments, created_at, faculty:faculty_id ( full_name )")
       .eq("student_id", userId)
       .order("created_at", { ascending: false })
       .limit(20),
-    supabase.from("evaluation_periods").select("id, name").eq("status", "open"),
+    db.from("evaluation_periods").select("id, name").eq("status", "open"),
   ]);
 
   const profile = profileRes.data;
@@ -156,3 +156,5 @@ export default async function StudentDashboardPage() {
     </div>
   );
 }
+
+

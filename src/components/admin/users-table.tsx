@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getDbBrowserClient } from "@/lib/db-browser";
 
-const roles = ["admin", "faculty", "student", "evaluator"];
+const roles = ["admin", "faculty", "student", "evaluator", "program_head"];
 
 type Profile = {
   id: string;
@@ -19,13 +19,13 @@ type Props = {
 };
 
 export default function UsersTable({ initialProfiles, error }: Props) {
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const db = useMemo(() => getDbBrowserClient(), []);
   const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
   const [message, setMessage] = useState<string | null>(error ?? null);
 
   const updateRole = async (id: string, role: string) => {
     setMessage(null);
-    const { error: updateError } = await supabase.from("profiles").update({ role }).eq("id", id);
+    const { error: updateError } = await db.from("profiles").update({ role }).eq("id", id);
     if (updateError) {
       setMessage(updateError.message);
       return;
@@ -84,3 +84,5 @@ export default function UsersTable({ initialProfiles, error }: Props) {
     </div>
   );
 }
+
+

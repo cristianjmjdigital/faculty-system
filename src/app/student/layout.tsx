@@ -1,8 +1,21 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import StudentTabNav from "@/components/chrome/student-tab-nav";
+import { getServerSessionUser, roleDefaultPath } from "@/lib/local-auth";
+import { redirect } from "next/navigation";
 
-export default function StudentLayout({ children }: { children: ReactNode }) {
+export default async function StudentLayout({ children }: { children: ReactNode }) {
+  const user = await getServerSessionUser();
+  if (!user) {
+    redirect("/auth/login/student?next=%2Fstudent");
+  }
+  if (user.must_change_password) {
+    redirect("/auth/change-password");
+  }
+  if (user.role !== "student") {
+    redirect(roleDefaultPath(user.role));
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <header className="border-b border-white/[0.06] bg-slate-950/90 backdrop-blur-xl">
@@ -17,8 +30,9 @@ export default function StudentLayout({ children }: { children: ReactNode }) {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Link href="/account" className="btn-ghost text-xs">Profile</Link>
             <Link href="/admin" className="btn-ghost text-xs">Admin</Link>
-            <Link href="/auth/login" className="btn-ghost text-xs">Sign out</Link>
+            <Link href="/api/auth/logout" className="btn-ghost text-xs">Sign out</Link>
           </div>
         </div>
         <div className="section-shell !py-0">
@@ -29,3 +43,4 @@ export default function StudentLayout({ children }: { children: ReactNode }) {
     </div>
   );
 }
+

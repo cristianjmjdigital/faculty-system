@@ -1,4 +1,4 @@
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getDbServerClient } from "@/lib/db-server";
 import AddSectionForm from "@/components/admin/add-section-form";
 import SectionScoresCard from "@/components/admin/section-scores-card";
 
@@ -33,27 +33,27 @@ type SectionScore = {
 };
 
 export default async function RecordsPage() {
-  const supabase = getSupabaseServerClient();
+  const db = getDbServerClient();
 
   const [coursesRes, sectionsRes, sentimentsRes, facultyRes, responsesRes] = await Promise.all([
-    supabase.from("courses").select("id, code, title").order("code").limit(100),
-    supabase
+    db.from("courses").select("id, code, title").order("code").limit(100),
+    db
       .from("sections")
       .select("id, term, academic_year, schedule, course:course_id ( code, title ), faculty:faculty_id ( full_name )")
       .order("created_at", { ascending: false })
       .limit(100),
-    supabase
+    db
       .from("student_sentiments")
       .select("id, sentiment, created_at, faculty:faculty_id ( full_name ), section:section_id ( term, academic_year )")
       .order("created_at", { ascending: false })
       .limit(50),
-    supabase
+    db
       .from("profiles")
       .select("id, full_name")
       .eq("role", "faculty")
       .order("full_name", { ascending: true })
       .limit(200),
-    supabase
+    db
       .from("evaluation_responses")
       .select(
         `score, evaluation:evaluation_id (
@@ -70,13 +70,13 @@ export default async function RecordsPage() {
   ]);
 
   const courses: Course[] = coursesRes.data ?? [];
-  const sections: Section[] = (sectionsRes.data ?? []).map((section) => ({
+  const sections: Section[] = (sectionsRes.data ?? []).map((section: any) => ({
     ...section,
-    // Supabase can return related records as arrays; normalize to single objects for rendering.
+    // Relation queries may return arrays; normalize to single objects for rendering.
     course: Array.isArray(section.course) ? section.course[0] ?? null : section.course ?? null,
     faculty: Array.isArray(section.faculty) ? section.faculty[0] ?? null : section.faculty ?? null,
   }));
-  const sentiments: Sentiment[] = (sentimentsRes.data ?? []).map((sentiment) => ({
+  const sentiments: Sentiment[] = (sentimentsRes.data ?? []).map((sentiment: any) => ({
     ...sentiment,
     faculty: Array.isArray(sentiment.faculty) ? sentiment.faculty[0] ?? null : sentiment.faculty ?? null,
     section: Array.isArray(sentiment.section) ? sentiment.section[0] ?? null : sentiment.section ?? null,
@@ -116,7 +116,7 @@ export default async function RecordsPage() {
   })();
 
   const courseOptions = courses.map((c) => ({ id: c.id, label: `${c.code} ${c.title}` }));
-  const facultyOptions = (facultyRes.data ?? []).map((f) => ({ id: f.id, name: f.full_name ?? "(no name)" }));
+  const facultyOptions = (facultyRes.data ?? []).map((f: any) => ({ id: f.id, name: f.full_name ?? "(no name)" }));
 
   return (
     <main className="section-shell space-y-8">
@@ -255,3 +255,5 @@ export default async function RecordsPage() {
     </main>
   );
 }
+
+

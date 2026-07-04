@@ -21,6 +21,7 @@ const links: NavLink[] = [
   { href: "/admin/users?role=faculty", label: "Faculty", icon: "🎓", role: "faculty" },
   { href: "/admin/users?role=student", label: "Students", icon: "🧑‍🎓", role: "student" },
   { href: "/faculty", label: "My Dashboard", icon: "🏫", section: "Personal" },
+  { href: "/program-head", label: "Program Head", icon: "🧭" },
 ];
 
 export default function SidebarNav() {
@@ -67,3 +68,4 @@ export default function SidebarNav() {
     </nav>
   );
 }
+

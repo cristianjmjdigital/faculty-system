@@ -6,7 +6,7 @@ type DepartmentOption = { id: string; name: string };
 
 type Props = {
   departments: DepartmentOption[];
-  defaultRole?: "admin" | "faculty" | "student" | "evaluator";
+  defaultRole?: "admin" | "faculty" | "student" | "evaluator" | "program_head";
 };
 
 export default function AddUserForm({ departments, defaultRole = "faculty" }: Props) {
@@ -124,6 +124,7 @@ export default function AddUserForm({ departments, defaultRole = "faculty" }: Pr
             <option value="faculty">Faculty</option>
             <option value="student">Student</option>
             <option value="evaluator">Evaluator</option>
+            <option value="program_head">Program Head</option>
           </select>
         </label>
 

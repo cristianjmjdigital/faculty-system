@@ -1,6 +1,7 @@
 import StudentForm from "../student-form";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getDbServerClient } from "@/lib/db-server";
 import { redirect } from "next/navigation";
+import { getServerSessionUser } from "@/lib/local-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -10,31 +11,31 @@ type RubricItem = { id: string; prompt: string; orderIndex: number; maxScore: nu
 type RubricCategory = { id: string; label: string; description: string | null; orderIndex: number; items: RubricItem[] };
 
 export default async function EvaluatePage() {
-  const supabase = getSupabaseServerClient();
-
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData?.user) {
+  const sessionUser = await getServerSessionUser();
+  if (!sessionUser) {
     redirect("/auth/login?next=%2Fstudent%2Fevaluate");
   }
 
+  const db = getDbServerClient();
+
   const [periodsResult, sectionsResult, categoriesResult] = await Promise.all([
-    supabase
+    db
       .from("evaluation_periods")
       .select("id, name, status, start_date")
       .eq("status", "open")
       .order("start_date", { ascending: true }),
-    supabase
+    db
       .from("sections")
       .select("id, term, academic_year, schedule, course:course_id ( code, title ), faculty:faculty_id ( id, full_name )")
       .limit(50),
-    supabase
+    db
       .from("rubric_categories")
       .select("id, label, description, order_index, rubric_items ( id, prompt, order_index, max_score )")
       .order("order_index", { ascending: true })
       .order("order_index", { ascending: true, foreignTable: "rubric_items" }),
   ]);
 
-  const periods: PeriodOption[] = (periodsResult.data ?? []).map((p) => ({ id: p.id, name: p.name }));
+  const periods: PeriodOption[] = (periodsResult.data ?? []).map((p: any) => ({ id: p.id, name: p.name }));
 
   const sections: SectionOption[] = (sectionsResult.data ?? []).map((s: any) => {
     const course = s.course ? `${s.course.code} ${s.course.title}` : "Section";
@@ -83,3 +84,5 @@ export default async function EvaluatePage() {
     </div>
   );
 }
+
+

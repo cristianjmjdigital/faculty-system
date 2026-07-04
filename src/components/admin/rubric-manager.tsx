@@ -2,7 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getDbBrowserClient } from "@/lib/db-browser";
 
 type Item = { id: string; prompt: string; order_index: number };
 type Category = { id: string; label: string; description: string | null; items: Item[] };
@@ -13,7 +13,7 @@ type Props = {
 };
 
 export default function RubricManager({ initialCategories, error }: Props) {
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const db = useMemo(() => getDbBrowserClient(), []);
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [catForm, setCatForm] = useState({ label: "", description: "" });
@@ -22,7 +22,7 @@ export default function RubricManager({ initialCategories, error }: Props) {
   const createCategory = async (event: FormEvent) => {
     event.preventDefault();
     setMessage(null);
-    const { data, error: insertError } = await supabase
+    const { data, error: insertError } = await db
       .from("rubric_categories")
       .insert({ label: catForm.label, description: catForm.description, order_index: categories.length })
       .select("id, label, description, order_index")
@@ -34,7 +34,10 @@ export default function RubricManager({ initialCategories, error }: Props) {
     }
 
     if (data) {
-      setCategories((prev) => [...prev, { ...data, items: [] }]);
+      setCategories((prev) => {
+        const withoutDuplicate = prev.filter((category) => category.id !== data.id);
+        return [...withoutDuplicate, { ...data, items: [] }];
+      });
       setCatForm({ label: "", description: "" });
       router.refresh();
     }
@@ -42,7 +45,7 @@ export default function RubricManager({ initialCategories, error }: Props) {
 
   const deleteCategory = async (id: string) => {
     setMessage(null);
-    const { error: deleteError } = await supabase.from("rubric_categories").delete().eq("id", id);
+    const { error: deleteError } = await db.from("rubric_categories").delete().eq("id", id);
     if (deleteError) {
       setMessage(deleteError.message);
       return;
@@ -56,7 +59,7 @@ export default function RubricManager({ initialCategories, error }: Props) {
     const cat = categories.find((c) => c.id === categoryId);
     const nextOrder = cat ? cat.items.length + 1 : 1;
 
-    const { data, error: insertError } = await supabase
+    const { data, error: insertError } = await db
       .from("rubric_items")
       .insert({ category_id: categoryId, prompt, order_index: nextOrder })
       .select("id, prompt, order_index")
@@ -77,7 +80,7 @@ export default function RubricManager({ initialCategories, error }: Props) {
 
   const deleteItem = async (id: string, categoryId: string) => {
     setMessage(null);
-    const { error: deleteError } = await supabase.from("rubric_items").delete().eq("id", id);
+    const { error: deleteError } = await db.from("rubric_items").delete().eq("id", id);
     if (deleteError) {
       setMessage(deleteError.message);
       return;
@@ -184,3 +187,5 @@ function AddItemInline({ onAdd }: AddItemProps) {
     </form>
   );
 }
+
+

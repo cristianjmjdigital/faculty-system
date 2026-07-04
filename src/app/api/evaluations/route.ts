@@ -1,23 +1,19 @@
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getDbServerClient } from "@/lib/db-server";
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSessionUser } from "@/lib/local-auth";
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabaseServerClient();
-
-    const {
-      data: userData,
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !userData?.user) {
+    const sessionUser = await getServerSessionUser();
+    if (!sessionUser) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const userId = userData.user.id;
+    const db = getDbServerClient();
+    const userId = sessionUser.id;
     const { assignmentId, periodId, overallComment, responses } = await request.json();
 
     if (!assignmentId || !responses || Object.keys(responses).length === 0) {
@@ -28,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the assignment exists and belongs to this evaluator
-    const { data: assignment, error: assignmentError } = await supabase
+    const { data: assignment, error: assignmentError } = await db
       .from("evaluator_assignments")
       .select("id, period_id, faculty_id")
       .eq("id", assignmentId)
@@ -43,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if period is open
-    const { data: period, error: periodError } = await supabase
+    const { data: period, error: periodError } = await db
       .from("evaluation_periods")
       .select("id, status")
       .eq("id", assignment.period_id)
@@ -57,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if evaluation already exists
-    const { data: existingEval } = await supabase
+    const { data: existingEval } = await db
       .from("evaluations")
       .select("id")
       .eq("assignment_id", assignmentId)
@@ -67,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     if (existingEval) {
       // Update existing evaluation
-      const { error: updateError } = await supabase
+      const { error: updateError } = await db
         .from("evaluations")
         .update({
           overall_comment: overallComment,
@@ -84,13 +80,13 @@ export async function POST(request: NextRequest) {
       }
 
       // Delete old responses
-      await supabase
+      await db
         .from("evaluation_responses")
         .delete()
         .eq("evaluation_id", evaluationId);
     } else {
       // Create new evaluation
-      const { data: newEval, error: createError } = await supabase
+      const { data: newEval, error: createError } = await db
         .from("evaluations")
         .insert({
           assignment_id: assignmentId,
@@ -118,7 +114,7 @@ export async function POST(request: NextRequest) {
       score: Number(score),
     }));
 
-    const { error: responsesError } = await supabase
+    const { error: responsesError } = await db
       .from("evaluation_responses")
       .insert(responseRecords);
 
@@ -141,3 +137,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+

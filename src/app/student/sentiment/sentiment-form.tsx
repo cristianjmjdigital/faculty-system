@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getDbBrowserClient } from "@/lib/db-browser";
 
 type Period = { id: string; name: string };
 type Section = { id: string; label: string; facultyId: string | null; facultyName: string };
@@ -18,7 +18,7 @@ const sentimentOptions = [
 ];
 
 export default function SentimentForm({ periods, sections }: Props) {
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const db = useMemo(() => getDbBrowserClient(), []);
   const [status, setStatus] = useState<{ kind: "idle" | "success" | "error"; message?: string }>({ kind: "idle" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedSentiment, setSelectedSentiment] = useState<string | null>(null);
@@ -28,16 +28,19 @@ export default function SentimentForm({ periods, sections }: Props) {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const form = event.currentTarget;
     setStatus({ kind: "idle" });
     setIsSubmitting(true);
 
-    const formData = new FormData(event.currentTarget);
+    const formData = new FormData(form);
     const periodId = (formData.get("periodId") as string) || null;
     const sectionId = selectedSection || null;
     const comments = (formData.get("comments") as string) || "";
 
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData?.user) {
+    const meRes = await fetch("/api/auth/me", { cache: "no-store" });
+    const mePayload = await meRes.json().catch(() => ({}));
+    const sessionUser = mePayload.user;
+    if (!meRes.ok || !sessionUser) {
       setStatus({ kind: "error", message: "You must be signed in to submit sentiment." });
       setIsSubmitting(false);
       return;
@@ -68,11 +71,11 @@ export default function SentimentForm({ periods, sections }: Props) {
       return;
     }
 
-    const { error: insertError } = await supabase.from("student_sentiments").insert({
+    const { error: insertError } = await db.from("student_sentiments").insert({
       period_id: periodId,
       section_id: sectionId,
       faculty_id: facultyId,
-      student_id: userData.user.id,
+      student_id: sessionUser.id,
       sentiment: selectedSentiment,
       comments: comments.trim() || null,
     });
@@ -87,7 +90,7 @@ export default function SentimentForm({ periods, sections }: Props) {
     setSelectedSentiment(null);
     setSelectedSection("");
     setIsSubmitting(false);
-    event.currentTarget.reset();
+    form.reset();
   };
 
   return (
@@ -203,3 +206,5 @@ export default function SentimentForm({ periods, sections }: Props) {
     </form>
   );
 }
+
+

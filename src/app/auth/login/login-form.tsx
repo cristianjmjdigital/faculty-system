@@ -1,31 +1,50 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import type { UserRole } from "@/lib/local-auth";
 
 type Props = {
   next: string;
+  expectedRole?: UserRole;
 };
 
-export default function LoginForm({ next }: Props) {
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+function defaultPathForRole(role?: string) {
+  if (role === "admin") return "/admin";
+  if (role === "faculty") return "/faculty";
+  if (role === "evaluator") return "/evaluator";
+  return "/student";
+}
+
+export default function LoginForm({ next, expectedRole }: Props) {
   const router = useRouter();
   const [status, setStatus] = useState<{ kind: "idle" | "error"; message?: string }>({ kind: "idle" });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      if (data.session) {
-        router.replace(next);
-      }
-    });
-    return () => {
-      mounted = false;
-    };
-  }, [next, router, supabase]);
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then(async (res) => {
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data.user;
+      })
+      .then((user) => {
+        if (user) {
+          if (user.must_change_password) {
+            router.replace("/auth/change-password");
+            return;
+          }
+          if (expectedRole && user.role !== expectedRole) {
+            router.replace(defaultPathForRole(user.role));
+            return;
+          }
+          router.replace(next || defaultPathForRole(user.role));
+        }
+      })
+      .catch(() => {
+        // Ignore session check errors on first load.
+      });
+  }, [next, router, expectedRole]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -36,15 +55,21 @@ export default function LoginForm({ next }: Props) {
     const email = (formData.get("email") as string) || "";
     const password = (formData.get("password") as string) || "";
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, next, expectedRole }),
+    });
 
-    if (error) {
-      setStatus({ kind: "error", message: error.message });
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      setStatus({ kind: "error", message: payload.error || "Unable to sign in." });
       setLoading(false);
       return;
     }
 
-    router.replace(next);
+    router.replace(payload.next || next || "/student");
   };
 
   return (
@@ -87,6 +112,11 @@ export default function LoginForm({ next }: Props) {
           "Sign in"
         )}
       </button>
+
+      <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+        Privacy notice: Evaluation identities are protected and personal data is handled for academic quality assurance only.
+      </p>
     </form>
   );
 }
+

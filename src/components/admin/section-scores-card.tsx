@@ -75,3 +75,4 @@ export default function SectionScoresCard({ scores }: Props) {
     </div>
   );
 }
+
